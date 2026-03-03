@@ -66,6 +66,7 @@ Collector:
 Collector supports:
 
 * Immediate revocation list
+* Versioned CRL snapshots with canonical serial normalization
 * Expired cert rejection
 * Source disable flag
 
@@ -88,7 +89,7 @@ Collector logs:
 * Revocations
 * Config changes
 
-Audit logs immutable (append-only).
+Audit logs immutable (append-only) and support bounded filter queries for forensic review.
 
 ---
 
@@ -97,6 +98,47 @@ Audit logs immutable (append-only).
 * HTTPS required
 * No plaintext fallback
 * No unauthenticated ingestion endpoints
+
+---
+
+## 9. Control-Plane RBAC Baseline
+
+Roles:
+
+* `admin`
+* `operator`
+* `viewer`
+
+Minimum authorization model:
+
+* deny by default
+* explicit action-based grants
+* unknown role/action rejected
+
+Baseline intent:
+
+* `admin`: full control-plane access including RBAC policy administration
+* `operator`: operational write access (retention/config/enrollment/revocation/routing) without RBAC administration
+* `viewer`: read-only diagnostics visibility (dashboard/search/live-tail/artifact/audit views)
+
+---
+
+## 10. Optional OIDC Authentication
+
+OIDC integration is optional and disabled by default.
+
+When enabled:
+
+* Issuer and audience must be explicitly configured.
+* Provider metadata issuer and JWKS URL must validate as HTTPS endpoints.
+* Token claims must pass issuer/audience/time validation before identity use.
+* External role claims are mapped to local RBAC roles; unknown roles are ignored.
+
+Failure handling:
+
+* Misconfigured OIDC settings fail closed.
+* Invalid or expired tokens are rejected.
+* If OIDC is disabled, local/default auth mechanisms remain in effect.
 
 ---
 

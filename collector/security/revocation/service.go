@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/kescott027/diag-gateway/collector/security/admission"
+	"github.com/kescott027/diag-gateway/collector/security/crl"
 )
 
 // SourceRegistry defines source status mutation and lookup.
@@ -103,13 +104,17 @@ func (s *Service) RevokeSource(sourceID, actor, reason string) error {
 }
 
 func (s *Service) RevokeSerial(serial, actor, reason string) error {
-	s.serials.RevokeAfter(serial, s.now().UTC())
+	canonical, err := crl.CanonicalSerial(serial)
+	if err != nil {
+		return err
+	}
+	s.serials.RevokeAfter(canonical, s.now().UTC())
 	if s.audit != nil {
 		return s.audit.Append(AuditEvent{
 			Timestamp: s.now().UTC(),
 			Actor:     actor,
 			Action:    "serial_revoked",
-			Serial:    serial,
+			Serial:    canonical,
 			Reason:    reason,
 		})
 	}

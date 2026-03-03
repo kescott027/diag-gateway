@@ -90,6 +90,40 @@ Availability rules:
 - degraded mode must remain ingest-capable
 - control/UI outage must not block ingest
 
+### 5.1 Supported HA Topology Patterns
+
+Pattern A: single-node local baseline (non-HA)
+
+- planes co-located on one host
+- SQLite metadata store allowed
+- intended for development and local diagnostics only
+
+Pattern B: active-active reference HA (recommended)
+
+- 3 Data Plane nodes behind load-balancer
+- 3 Correlation Plane nodes with partition ownership
+- replicated metadata store backend
+- pull-based worker ownership of partitions with lease/heartbeat semantics
+
+Pattern C: active-active with optional deep analysis
+
+- Pattern B plus isolated Deep Analysis workers (minimum 2 nodes)
+- Deep Analysis receives replicated derived events only
+- Deep Analysis failure must not affect Data Plane ingest durability
+
+### 5.2 Partition Ownership and Rebalance Rules
+
+- partition assignment must be deterministic from `(tenant_id, source_id)` keyspace
+- one active owner per partition at a time; ownership transitions require lease expiry or explicit revoke
+- rebalance operations must preserve per-partition ordering and idempotency-key scope
+- replay on ownership handoff must be safe under duplicate delivery assumptions
+
+### 5.3 Failure-Domain Rules
+
+- place Data Plane replicas across at least 3 independent failure domains (host/zone/rack)
+- avoid co-locating all metadata replicas with one Data Plane node group
+- correlate node-loss alarms with ingest lag and queue-depth alarms for safe automation
+
 ## 6. Backpressure and Degradation Policies
 
 Backpressure strategy:
@@ -97,6 +131,18 @@ Backpressure strategy:
 - explicit 429/503 with retry hint
 - bounded in-memory queues
 - disk-backed overflow buffers
+
+Backpressure thresholds (minimum operating contract):
+
+- warning: queue utilization >= 70%
+- critical: queue utilization >= 85%
+- saturated: queue utilization >= 95%
+
+Required control response by level:
+
+- warning: increase telemetry sampling granularity and emit early pressure signals
+- critical: increase adaptive sampling on stable high-volume fingerprints; defer expensive parsing
+- saturated: admit only high-priority classes and preserve raw durability + fingerprinting first
 
 Degradation order under overload:
 
@@ -111,6 +157,7 @@ Required behavior:
 - queue isolation between raw and signal streams
 - deterministic throttling policy
 - no silent dropping of high-priority anomalies
+- degraded behavior must be observable with explicit mode/state telemetry
 
 ## 7. State Management Requirements
 
@@ -130,11 +177,20 @@ Must expose plane-level telemetry:
 - state store utilization and eviction rate
 - queue depth and backpressure indicators
 - effective sampling rate by fingerprint class
+- partition ownership churn rate
+- lease/heartbeat freshness (for HA partition owners)
+- replay volume after failover
 
 SLO observability:
 
 - validate p95 detection latency < 3s at sustained 20k EPS profile
 - track burst recovery time after 100k EPS shock
+
+HA observability:
+
+- alert if a partition has no active owner for > 2 lease intervals
+- alert if Data Plane durable queue replay exceeds configured recovery budget
+- alert on repeated owner flapping for the same partition key range
 
 ## 9. Security Baseline for Deployment
 
@@ -150,6 +206,12 @@ SLO observability:
 - verify mixed-version protocol compatibility before full rollout
 - pause deep-analysis modules first during constrained maintenance windows
 - never deploy protocol-breaking changes without major-version plan
+
+HA rollout constraints:
+
+- do not upgrade more than one Data Plane node in the same partition ownership cohort at once
+- verify lease handoff and replay-idempotency behavior during canary
+- block rollout if ingest lag or replay error rates exceed safety thresholds
 
 ## 11. Validation Before Production Implementation
 

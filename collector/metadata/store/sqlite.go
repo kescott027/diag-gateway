@@ -3,10 +3,12 @@ package store
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -42,6 +44,8 @@ func (s *SQLiteStore) init() error {
 	statements := []string{
 		`CREATE TABLE IF NOT EXISTS sources (
 			source_id TEXT PRIMARY KEY,
+			group_id TEXT NOT NULL DEFAULT '',
+			tags_json TEXT NOT NULL DEFAULT '[]',
 			status TEXT NOT NULL,
 			last_seen_at TEXT,
 			updated_at TEXT NOT NULL
@@ -70,6 +74,20 @@ func (s *SQLiteStore) init() error {
 			return fmt.Errorf("init sqlite schema: %w", err)
 		}
 	}
+
+	migrations := []string{
+		`ALTER TABLE sources ADD COLUMN group_id TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE sources ADD COLUMN tags_json TEXT NOT NULL DEFAULT '[]'`,
+	}
+	for _, stmt := range migrations {
+		if _, err := s.db.Exec(stmt); err != nil {
+			lower := strings.ToLower(err.Error())
+			if strings.Contains(lower, "duplicate column name") {
+				continue
+			}
+			return fmt.Errorf("migrate sqlite schema: %w", err)
+		}
+	}
 	return nil
 }
 
@@ -77,14 +95,21 @@ func (s *SQLiteStore) UpsertSource(ctx context.Context, rec SourceRecord) error 
 	if err := validateID("source_id", rec.SourceID); err != nil {
 		return err
 	}
+	if err := validateOptionalID("group_id", rec.GroupID); err != nil {
+		return err
+	}
+	rec.GroupID = strings.ToLower(strings.TrimSpace(rec.GroupID))
+	rec.Tags = normalizeTags(rec.Tags)
 	_, err := s.db.ExecContext(ctx,
-		`INSERT INTO sources (source_id, status, last_seen_at, updated_at)
-		 VALUES (?, ?, ?, ?)
+		`INSERT INTO sources (source_id, group_id, tags_json, status, last_seen_at, updated_at)
+		 VALUES (?, ?, ?, ?, ?, ?)
 		 ON CONFLICT(source_id) DO UPDATE SET
+		   group_id=excluded.group_id,
+		   tags_json=excluded.tags_json,
 		   status=excluded.status,
 		   last_seen_at=excluded.last_seen_at,
 		   updated_at=excluded.updated_at`,
-		rec.SourceID, rec.Status, timeToText(rec.LastSeenAt), timeToText(rec.UpdatedAt),
+		rec.SourceID, rec.GroupID, tagsToJSON(rec.Tags), rec.Status, timeToText(rec.LastSeenAt), timeToText(rec.UpdatedAt),
 	)
 	if err != nil {
 		return fmt.Errorf("upsert source: %w", err)
@@ -97,16 +122,18 @@ func (s *SQLiteStore) GetSource(ctx context.Context, sourceID string) (SourceRec
 		return SourceRecord{}, err
 	}
 	row := s.db.QueryRowContext(ctx,
-		`SELECT source_id, status, last_seen_at, updated_at FROM sources WHERE source_id = ?`, sourceID)
+		`SELECT source_id, group_id, tags_json, status, last_seen_at, updated_at FROM sources WHERE source_id = ?`, sourceID)
 	var rec SourceRecord
+	var tagsJSON string
 	var lastSeenText string
 	var updatedText string
-	if err := row.Scan(&rec.SourceID, &rec.Status, &lastSeenText, &updatedText); err != nil {
+	if err := row.Scan(&rec.SourceID, &rec.GroupID, &tagsJSON, &rec.Status, &lastSeenText, &updatedText); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return SourceRecord{}, ErrNotFound
 		}
 		return SourceRecord{}, fmt.Errorf("get source: %w", err)
 	}
+	rec.Tags = tagsFromJSON(tagsJSON)
 	rec.LastSeenAt = parseTime(lastSeenText)
 	rec.UpdatedAt = parseTime(updatedText)
 	return rec, nil
@@ -114,7 +141,7 @@ func (s *SQLiteStore) GetSource(ctx context.Context, sourceID string) (SourceRec
 
 func (s *SQLiteStore) ListSources(ctx context.Context) ([]SourceRecord, error) {
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT source_id, status, last_seen_at, updated_at FROM sources ORDER BY source_id ASC`)
+		`SELECT source_id, group_id, tags_json, status, last_seen_at, updated_at FROM sources ORDER BY source_id ASC`)
 	if err != nil {
 		return nil, fmt.Errorf("list sources: %w", err)
 	}
@@ -123,11 +150,13 @@ func (s *SQLiteStore) ListSources(ctx context.Context) ([]SourceRecord, error) {
 	out := make([]SourceRecord, 0)
 	for rows.Next() {
 		var rec SourceRecord
+		var tagsJSON string
 		var lastSeenText string
 		var updatedText string
-		if err := rows.Scan(&rec.SourceID, &rec.Status, &lastSeenText, &updatedText); err != nil {
+		if err := rows.Scan(&rec.SourceID, &rec.GroupID, &tagsJSON, &rec.Status, &lastSeenText, &updatedText); err != nil {
 			return nil, fmt.Errorf("scan source row: %w", err)
 		}
+		rec.Tags = tagsFromJSON(tagsJSON)
 		rec.LastSeenAt = parseTime(lastSeenText)
 		rec.UpdatedAt = parseTime(updatedText)
 		out = append(out, rec)
@@ -297,4 +326,24 @@ func parseTime(value string) time.Time {
 		return ts
 	}
 	return time.Time{}
+}
+
+func tagsToJSON(tags []string) string {
+	normalized := normalizeTags(tags)
+	blob, err := json.Marshal(normalized)
+	if err != nil {
+		return "[]"
+	}
+	return string(blob)
+}
+
+func tagsFromJSON(value string) []string {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	var tags []string
+	if err := json.Unmarshal([]byte(value), &tags); err != nil {
+		return nil
+	}
+	return normalizeTags(tags)
 }

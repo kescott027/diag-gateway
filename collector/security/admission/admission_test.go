@@ -7,6 +7,8 @@ import (
 	"math/big"
 	"testing"
 	"time"
+
+	"github.com/kescott027/diag-gateway/collector/security/crl"
 )
 
 func TestValidatePeerCertificateAcceptsActiveSource(t *testing.T) {
@@ -117,6 +119,29 @@ func TestValidatePeerCertificateRejectsRevokedSerial(t *testing.T) {
 	_, err := validator.ValidatePeerCertificate(cert)
 	if !errors.Is(err, ErrRevokedCertificate) {
 		t.Fatalf("expected revoked-certificate error, got: %v", err)
+	}
+}
+
+func TestValidatePeerCertificateUsesCRLManager(t *testing.T) {
+	registry := NewInMemoryRegistry()
+	registry.SetStatus("source-1", SourceStatusActive)
+	crlManager := crl.NewManager()
+
+	validator := NewValidatorWithRevocation(registry, crlManager)
+	now := time.Date(2026, 3, 3, 11, 50, 0, 0, time.UTC)
+	validator.now = func() time.Time { return now }
+	crlManager.RevokeAfter("0x03e9", now)
+
+	cert := &x509.Certificate{
+		SerialNumber: big.NewInt(1001),
+		Subject:      pkix.Name{CommonName: "source-1"},
+		NotBefore:    now.Add(-1 * time.Minute),
+		NotAfter:     now.Add(1 * time.Hour),
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}
+	_, err := validator.ValidatePeerCertificate(cert)
+	if !errors.Is(err, ErrRevokedCertificate) {
+		t.Fatalf("expected revoked-certificate error with crl manager, got: %v", err)
 	}
 }
 

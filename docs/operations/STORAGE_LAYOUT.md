@@ -76,6 +76,7 @@ agent_metrics
 Database contains:
 
 * Lookup data
+* Source grouping metadata (`group_id`, `tags`)
 * Stream status
 * Enrollment records
 

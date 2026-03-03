@@ -58,7 +58,14 @@ func runStoreContract(t *testing.T, newStore func(t *testing.T) Store) {
 	}
 
 	now := time.Now().UTC().Round(time.Nanosecond)
-	sourceA := SourceRecord{SourceID: "src-a", Status: "active", LastSeenAt: now, UpdatedAt: now}
+	sourceA := SourceRecord{
+		SourceID:   "src-a",
+		GroupID:    "prod-a",
+		Tags:       []string{"API", "api", " core "},
+		Status:     "active",
+		LastSeenAt: now,
+		UpdatedAt:  now,
+	}
 	sourceB := SourceRecord{SourceID: "src-b", Status: "stale", UpdatedAt: now.Add(time.Second)}
 	if err := s.UpsertSource(ctx, sourceB); err != nil {
 		t.Fatalf("upsert source-b failed: %v", err)
@@ -73,6 +80,9 @@ func runStoreContract(t *testing.T, newStore func(t *testing.T) Store) {
 	}
 	if gotSource.SourceID != sourceA.SourceID || gotSource.Status != sourceA.Status || !gotSource.LastSeenAt.Equal(sourceA.LastSeenAt) || !gotSource.UpdatedAt.Equal(sourceA.UpdatedAt) {
 		t.Fatalf("unexpected source-a record: %+v", gotSource)
+	}
+	if gotSource.GroupID != "prod-a" || len(gotSource.Tags) != 2 || gotSource.Tags[0] != "api" || gotSource.Tags[1] != "core" {
+		t.Fatalf("unexpected source-a grouping/tags: %+v", gotSource)
 	}
 
 	sources, err := s.ListSources(ctx)
@@ -151,6 +161,8 @@ func runStoreContract(t *testing.T, newStore func(t *testing.T) Store) {
 
 	updated := sourceA
 	updated.Status = "revoked"
+	updated.GroupID = "prod-b"
+	updated.Tags = []string{"tier-1", "tier-1", "backend"}
 	updated.UpdatedAt = now.Add(5 * time.Second)
 	if err := s.UpsertSource(ctx, updated); err != nil {
 		t.Fatalf("upsert updated source failed: %v", err)
@@ -161,5 +173,8 @@ func runStoreContract(t *testing.T, newStore func(t *testing.T) Store) {
 	}
 	if gotUpdated.Status != "revoked" || !gotUpdated.UpdatedAt.Equal(updated.UpdatedAt) {
 		t.Fatalf("unexpected updated source: %+v", gotUpdated)
+	}
+	if gotUpdated.GroupID != "prod-b" || len(gotUpdated.Tags) != 2 || gotUpdated.Tags[0] != "backend" || gotUpdated.Tags[1] != "tier-1" {
+		t.Fatalf("unexpected updated source tags/group: %+v", gotUpdated)
 	}
 }

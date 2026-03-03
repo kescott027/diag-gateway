@@ -30,7 +30,7 @@ func TestRevokeSourceAndSerialWithAudit(t *testing.T) {
 		t.Fatalf("expected source revoked, got %s", st)
 	}
 
-	if err := svc.RevokeSerial("12345", "operator-a", "suspected leak"); err != nil {
+	if err := svc.RevokeSerial("0x3039", "operator-a", "suspected leak"); err != nil {
 		t.Fatalf("revoke serial failed: %v", err)
 	}
 	if !serials.IsRevoked("12345") {

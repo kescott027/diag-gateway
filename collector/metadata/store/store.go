@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -14,6 +15,8 @@ var ErrNotFound = errors.New("metadata record not found")
 // SourceRecord represents one source metadata row.
 type SourceRecord struct {
 	SourceID   string    `json:"source_id"`
+	GroupID    string    `json:"group_id,omitempty"`
+	Tags       []string  `json:"tags,omitempty"`
 	Status     string    `json:"status"`
 	LastSeenAt time.Time `json:"last_seen_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
@@ -63,6 +66,42 @@ func validateID(name, value string) error {
 	return nil
 }
 
+func validateOptionalID(name, value string) error {
+	if value == "" {
+		return nil
+	}
+	return validateID(name, value)
+}
+
+func normalizeTags(tags []string) []string {
+	if len(tags) == 0 {
+		return nil
+	}
+	set := make(map[string]struct{}, len(tags))
+	for _, tag := range tags {
+		trimmed := strings.ToLower(strings.TrimSpace(tag))
+		if trimmed == "" {
+			continue
+		}
+		set[trimmed] = struct{}{}
+	}
+	out := make([]string, 0, len(set))
+	for tag := range set {
+		out = append(out, tag)
+	}
+	sort.Strings(out)
+	return out
+}
+
+func cloneTags(tags []string) []string {
+	if len(tags) == 0 {
+		return nil
+	}
+	out := make([]string, len(tags))
+	copy(out, tags)
+	return out
+}
+
 // MemoryStore is an in-memory metadata adapter for tests and lightweight runs.
 type MemoryStore struct {
 	mu sync.RWMutex
@@ -86,6 +125,11 @@ func (m *MemoryStore) UpsertSource(_ context.Context, rec SourceRecord) error {
 	if err := validateID("source_id", rec.SourceID); err != nil {
 		return err
 	}
+	if err := validateOptionalID("group_id", rec.GroupID); err != nil {
+		return err
+	}
+	rec.GroupID = strings.ToLower(strings.TrimSpace(rec.GroupID))
+	rec.Tags = normalizeTags(rec.Tags)
 	m.mu.Lock()
 	m.sources[rec.SourceID] = rec
 	m.mu.Unlock()
@@ -102,6 +146,7 @@ func (m *MemoryStore) GetSource(_ context.Context, sourceID string) (SourceRecor
 	if !ok {
 		return SourceRecord{}, ErrNotFound
 	}
+	rec.Tags = cloneTags(rec.Tags)
 	return rec, nil
 }
 
@@ -109,6 +154,7 @@ func (m *MemoryStore) ListSources(_ context.Context) ([]SourceRecord, error) {
 	m.mu.RLock()
 	out := make([]SourceRecord, 0, len(m.sources))
 	for _, rec := range m.sources {
+		rec.Tags = cloneTags(rec.Tags)
 		out = append(out, rec)
 	}
 	m.mu.RUnlock()
@@ -116,7 +162,7 @@ func (m *MemoryStore) ListSources(_ context.Context) ([]SourceRecord, error) {
 	return out, nil
 }
 
-func streamKey(sourceID, streamID string) string { return sourceID + "/" + streamID }
+func streamKey(sourceID, streamID string) string     { return sourceID + "/" + streamID }
 func artifactKey(sourceID, artifactID string) string { return sourceID + "/" + artifactID }
 
 func (m *MemoryStore) UpsertStream(_ context.Context, rec StreamRecord) error {

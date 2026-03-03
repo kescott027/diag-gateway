@@ -572,6 +572,104 @@
 - Test coverage delta: added cross-adapter contract tests for source/stream/artifact upsert/get/list behavior and validation paths.
 - Risk flags: SQLite-only operational tuning remains to be documented for high-concurrency production workloads.
 
+## Sprint 44 (Completed)
+- Start timestamp: 2026-03-03 14:26:25 CST
+- Projected completion timestamp: 2026-03-03 14:30:08 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:32:07 CST
+- Duration: 00:05:42
+- High-level changes: retention/compaction job runner implemented with interval gating, overlap protection, and bounded per-run source execution.
+- Architectural decisions made: scheduler now enforces deterministic source ordering and explicit `max_sources_per_run` fanout limits.
+- Debt introduced: distributed leader-election/execution semantics are not yet implemented for multi-node deployment.
+- Debt resolved: missing R3-08 retention/compaction orchestration baseline.
+- Test coverage delta: added runner tests for cadence gating, bounded execution summaries, overlap skip behavior, and metadata-source lister adapter behavior.
+- Risk flags: current runner is single-process scoped and requires HA coordination layer before multi-node activation.
+
+## Sprint 45 (Completed)
+- Start timestamp: 2026-03-03 14:32:07 CST
+- Projected completion timestamp: 2026-03-03 14:36:43 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:34:29 CST
+- Duration: 00:02:22
+- High-level changes: deployment operations guide hardened with explicit HA topology patterns, ownership/rebalance semantics, and failover observability requirements.
+- Architectural decisions made: active-active topology with pull-based lease ownership and failure-domain separation established as reference HA model.
+- Debt introduced: runtime leader-election/lease implementation remains pending beyond documentation layer.
+- Debt resolved: missing R3-09 HA collector deployment pattern baseline.
+- Test coverage delta: no code-path changes; full regression suite executed to ensure documentation-only update does not drift from build/test gates.
+- Risk flags: HA runbooks still require executable integration tests once orchestration layer is implemented.
+
+## Sprint 46 (Completed)
+- Start timestamp: 2026-03-03 14:34:29 CST
+- Projected completion timestamp: 2026-03-03 14:38:59 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:37:38 CST
+- Duration: 00:03:09
+- High-level changes: control-plane RBAC policy primitives implemented with explicit role/action grants and deny-by-default authorization checks.
+- Architectural decisions made: `admin/operator/viewer` baseline established with action-scoped permissions and explicit unknown-role/action rejection.
+- Debt introduced: RBAC policy persistence and runtime management endpoints are not yet implemented.
+- Debt resolved: missing R3-01 RBAC baseline.
+- Test coverage delta: added role/action parse tests, permission matrix tests, and explicit authorization-error tests.
+- Risk flags: role grants will require integration tests once API handlers adopt authorization middleware.
+
+## Sprint 47 (Completed)
+- Start timestamp: 2026-03-03 14:37:38 CST
+- Projected completion timestamp: 2026-03-03 14:41:22 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:40:48 CST
+- Duration: 00:03:10
+- High-level changes: optional OIDC auth primitives implemented with strict config/metadata validation, claim checks, and RBAC role mapping hooks.
+- Architectural decisions made: OIDC identity extraction now requires issuer/audience/time validation and maps external roles through explicit local-role mapping.
+- Debt introduced: token signature verification and JWKS refresh loop are not yet integrated into runtime middleware.
+- Debt resolved: missing R3-12 optional OIDC authentication baseline.
+- Test coverage delta: added config, metadata, claim-validation, and role-mapping tests for success and failure paths.
+- Risk flags: end-to-end middleware integration tests are needed once HTTP/UI auth stack is introduced.
+
+## Sprint 48 (Completed)
+- Start timestamp: 2026-03-03 14:40:48 CST
+- Projected completion timestamp: 2026-03-03 14:43:42 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:44:42 CST
+- Duration: 00:03:54
+- High-level changes: source grouping/tagging primitives implemented by extending metadata store source records and adding deterministic grouping/filtering service APIs.
+- Architectural decisions made: grouping metadata now lives in canonical source metadata (`group_id`, `tags`) across both memory and SQLite adapters.
+- Debt introduced: index-optimized group/tag querying is not yet implemented for very large fleets.
+- Debt resolved: missing R3-02 agent grouping and tagging baseline.
+- Test coverage delta: added store parity updates for group/tag fields plus grouping service assignment/filter validation tests.
+- Risk flags: full-stack UI/API integration still needed to expose grouping workflows to operators.
+
+## Sprint 49 (Completed)
+- Start timestamp: 2026-03-03 14:44:42 CST
+- Projected completion timestamp: 2026-03-03 14:48:06 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:49:32 CST
+- Duration: 00:04:50
+- High-level changes: versioned CRL manager introduced with canonical serial handling, snapshot persistence, and admission/revocation integration updates.
+- Architectural decisions made: revocation serials are canonicalized before storage and evaluation to ensure consistent enforcement across hex/decimal serial formats.
+- Debt introduced: CRL distribution/refresh mechanism for multi-node collectors is not yet implemented.
+- Debt resolved: missing R3-10 certificate revocation list baseline.
+- Test coverage delta: added CRL manager unit tests plus admission/revocation integration tests for canonical serial revocation behavior.
+- Risk flags: cluster-wide CRL propagation consistency remains future work for HA deployments.
+
+## Sprint 50 (Completed)
+- Start timestamp: 2026-03-03 14:49:32 CST
+- Projected completion timestamp: 2026-03-03 14:53:30 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:52:28 CST
+- Duration: 00:02:56
+- High-level changes: append-only enrollment/config audit trail service implemented with bounded query filters and event helper APIs.
+- Architectural decisions made: security audit records now use JSONL append-only file semantics with actor/action/source/config context.
+- Debt introduced: log compaction/indexing strategy is not yet implemented for very large long-term audit files.
+- Debt resolved: missing R3-11 enrollment/config audit trail baseline.
+- Test coverage delta: added audit append validation, bounded query filter, limit, and time-window behavior tests.
+- Risk flags: large-scale retention/archival policy for audit logs remains to be defined.
+
+## Architecture Coherence Review (After Sprint 48)
+- Architecture coherence: security and fleet-management foundations now include RBAC, optional OIDC mapping, and canonical grouping metadata aligned to pluggable metadata store boundaries.
+- Refactor debt: moderate; metadata consumers (dashboard/retention) should progressively adopt shared source-metadata query services to avoid duplicate list/filter logic.
+- Naming consistency: `source_id`, `group_id`, and `tags` conventions are consistent across docs, metadata records, and grouping services.
+- Config surface: OIDC and grouping policies remain mostly library-level primitives and need explicit collector runtime config/API wiring.
+- Plugin security boundary review: unchanged; no AI/plugin runtime path was introduced.
+
+## Architecture Coherence Review (After Sprint 45)
+- Architecture coherence: artifact/retention metadata stack now has explicit scheduler orchestration and deployment-level HA constraints, preserving durability and idempotency invariants end-to-end.
+- Refactor debt: moderate; scheduler ownership model should be integrated with future RBAC/audit surfaces before remote control-plane actions are introduced.
+- Naming consistency: partition and identity keys (`tenant_id`, `source_id`, `fingerprint`) remain consistent across protocol, retention jobs, and deployment docs.
+- Config surface: deployment thresholds and scheduler intervals are documented but need explicit `CONFIG_SCHEMA` wiring and runtime enforcement hooks.
+- Plugin security boundary review: unchanged; no AI/plugin runtime paths introduced.
+
 ## Architecture Coherence Review (After Sprint 42)
 - Architecture coherence: storage and control-plane primitives now include artifact lifecycle, retention policy/pruning, dashboard aggregation, and metadata abstraction boundaries with deterministic contracts.
 - Refactor debt: moderate; retention/dashboard services should progressively adopt metadata store abstraction to avoid mixed filesystem+metadata joins.
@@ -604,6 +702,6 @@
 
 - Sprint cadence mode: accelerated (minutes/hours)
 - Daily target: minimum 10 completed sprints/day
-- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14, Sprint 29 = 00:05:17, Sprint 30 = 00:02:04, Sprint 31 = 00:04:16, Sprint 32 = 00:02:38, Sprint 33 = 00:02:07, Sprint 34 = 00:01:28, Sprint 35 = 00:02:00, Sprint 36 = 00:01:32, Sprint 37 = 00:18:15, Sprint 38 = 00:02:16, Sprint 39 = 00:02:49, Sprint 40 = 00:02:26, Sprint 41 = 00:03:03, Sprint 42 = 00:02:40, Sprint 43 = 00:05:25
-- Current projection duration (rolling average of last 3): 00:03:43
+- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14, Sprint 29 = 00:05:17, Sprint 30 = 00:02:04, Sprint 31 = 00:04:16, Sprint 32 = 00:02:38, Sprint 33 = 00:02:07, Sprint 34 = 00:01:28, Sprint 35 = 00:02:00, Sprint 36 = 00:01:32, Sprint 37 = 00:18:15, Sprint 38 = 00:02:16, Sprint 39 = 00:02:49, Sprint 40 = 00:02:26, Sprint 41 = 00:03:03, Sprint 42 = 00:02:40, Sprint 43 = 00:05:25, Sprint 44 = 00:05:42, Sprint 45 = 00:02:22, Sprint 46 = 00:03:09, Sprint 47 = 00:03:10, Sprint 48 = 00:03:54, Sprint 49 = 00:04:50, Sprint 50 = 00:02:56
+- Current projection duration (rolling average of last 3): 00:03:53
 - Rolling projection rule: average of last 3 completed sprint durations
