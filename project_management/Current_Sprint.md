@@ -1,28 +1,28 @@
 # Current Sprint
 
 ## Sprint
-- Sprint 37
+- Sprint 42
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 13:43:31 CST
+- Start Time: 14:16:46 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 13:45:11 CST
+- Target End Time (Projected): 2026-03-03 14:19:32 CST
 - Actual End Time: Pending
 - Status: In Progress
 
 ## Sprint Goal
-Implement enriched artifact metadata model.
+Implement per-source dashboard backend aggregation primitives.
 
 ## Selected Stories
-- R2-03 Artifact metadata model
+- R2-11 Per-source dashboard UX
 
 ## Rationale for Selection
-- Resume semantics are complete; metadata enrichment is next to support retrieval, filtering, and audit workflows.
+- Core source telemetry/listing/search primitives exist; dashboard aggregation is the next usability step.
 
 ## Acceptance Criteria Summary
-- Metadata captures source, checksum, content attributes, and optional tags.
-- Metadata updates are atomic and compatible with prior metadata files.
-- Unit tests validate metadata persistence and backward-compatible defaults.
+- Dashboard service returns consolidated per-source summary cards (liveness, throughput, errors, queue, stream/artifact counts).
+- Service output is deterministic and supports source filtering.
+- Unit tests validate aggregation and empty-source behavior.
 
 ## Definition of Done (Sprint)
 - Documentation updates complete.
@@ -33,8 +33,8 @@ Implement enriched artifact metadata model.
 - Sprint completion time logged for projection baseline updates.
 
 ## Risks
-- Metadata schema drift can break downstream consumers if backward compatibility is not preserved.
+- Inconsistent cross-service joins could produce misleading source-level summaries.
 
 ## Required Architectural Review Areas
-- Schema evolution strategy for metadata fields.
-- Retention and retrieval compatibility with enriched metadata.
+- Summary contract stability for future UI integration.
+- Data freshness and staleness semantics across metrics/liveness/catalog sources.

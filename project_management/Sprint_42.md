@@ -1,27 +1,27 @@
-# Sprint 37
+# Sprint 42
 
 ## Sprint Metadata
-- Sprint Number: 37
+- Sprint Number: 42
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 13:43:31 CST
+- Start Time: 14:16:46 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 13:45:11 CST
+- Target End Time (Projected): 2026-03-03 14:19:32 CST
 - Actual Completion Time: Pending
 - Status: In Progress
 
 ## Sprint Goal
-Implement enriched artifact metadata model.
+Implement per-source dashboard backend aggregation primitives.
 
 ## Stories Included
-- R2-03 Artifact metadata model
+- R2-11 Per-source dashboard UX
 
 ## Files Modified
 - Pending
 
 ## Architectural Notes
-- Metadata schema evolution must be backward-compatible.
-- Additional metadata fields must remain optional and deterministic.
+- Dashboard summary contracts must remain deterministic and composable.
+- Aggregation should rely on existing source metrics/liveness/listing primitives.
 
 ## Deviations From Plan
 - None so far.

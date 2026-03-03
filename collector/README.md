@@ -4,7 +4,10 @@ Ingest adapters, admission control, buffering, and durable append-only storage i
 
 Current packages:
 
+- `collector/artifacts/download` signed, time-bounded artifact download-token generation and verification primitives.
 - `collector/artifacts/upload` append-oriented artifact upload lifecycle with resume-state metadata and integrity hashing.
+- `collector/bundles/exporter` deterministic debug-bundle export with embedded/sidecar manifest generation.
+- `collector/retention` per-source retention policy storage and deterministic stream/artifact pruning primitives.
 - `collector/api/listing` deterministic source/file catalog listing primitives for UI integration.
 - `collector/api/livetail` bounded cursor-based stream polling primitives for live-tail UI integration.
 - `collector/api/search` bounded substring/regex search primitives over stream logs.

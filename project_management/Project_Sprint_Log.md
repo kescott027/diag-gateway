@@ -488,6 +488,73 @@
 - Test coverage delta: added resume-state lifecycle tests and append-after-finalize rejection coverage.
 - Risk flags: metadata/file-size divergence should be monitored if external processes mutate artifact files.
 
+## Sprint 37 (Completed)
+- Start timestamp: 2026-03-03 13:43:31 CST
+- Projected completion timestamp: 2026-03-03 13:45:11 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:01:46 CST
+- Duration: 00:18:15
+- High-level changes: artifact metadata model enriched with optional tags, alias fields, normalization logic, and metadata update API.
+- Architectural decisions made: legacy metadata fields are mapped to canonical fields during load, preserving backward compatibility for existing artifact metadata files.
+- Debt introduced: metadata-query/indexing surface is not yet implemented for retrieval APIs.
+- Debt resolved: missing R2-03 artifact metadata model.
+- Test coverage delta: added metadata update and legacy-compatibility tests with schema normalization assertions.
+- Risk flags: long-term schema growth should remain additive to avoid breaking stored metadata compatibility.
+
+## Sprint 38 (Completed)
+- Start timestamp: 2026-03-03 14:02:42 CST
+- Projected completion timestamp: 2026-03-03 14:09:58 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:04:58 CST
+- Duration: 00:02:16
+- High-level changes: signed, short-lived artifact download-token generation and verification service implemented.
+- Architectural decisions made: HMAC-SHA256 token signing with expiry plus completed-artifact checks adopted for retrieval authorization.
+- Debt introduced: token revocation/audit tracking is not yet integrated.
+- Debt resolved: missing R2-04 artifact download-link backend primitives.
+- Test coverage delta: added tests for valid, expired, invalid-signature, open-artifact, and missing-artifact link verification behavior.
+- Risk flags: signing-secret rotation strategy needs future config/runtime integration.
+
+## Sprint 39 (Completed)
+- Start timestamp: 2026-03-03 14:05:46 CST
+- Projected completion timestamp: 2026-03-03 14:13:07 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:08:35 CST
+- Duration: 00:02:49
+- High-level changes: per-source retention policy store and deterministic prune execution service implemented.
+- Architectural decisions made: retention pruning now enforces status-aware eligibility (closed streams, completed artifacts) before age cutoff deletion.
+- Debt introduced: retention execution scheduling/orchestration is not yet wired to background job runner.
+- Debt resolved: missing R2-12 retention policy per source baseline.
+- Test coverage delta: added policy persistence and prune behavior tests including active/open protection checks.
+- Risk flags: malformed legacy metadata timestamps are currently skipped rather than remediated.
+
+## Sprint 40 (Completed)
+- Start timestamp: 2026-03-03 14:09:30 CST
+- Projected completion timestamp: 2026-03-03 14:17:17 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:11:56 CST
+- Duration: 00:02:26
+- High-level changes: shared compression mode primitives implemented for `none`, `gzip`, and `zstd`, including negotiation and round-trip helpers.
+- Architectural decisions made: compression negotiation now falls back to `none` when no shared supported mode exists.
+- Debt introduced: compression configuration is not yet wired into ingest transport/runtime paths.
+- Debt resolved: missing R2-14 compression options baseline.
+- Test coverage delta: added compression parser, round-trip, invalid-mode, and negotiation tests.
+- Risk flags: zstd dependency version should be tracked for long-term compatibility/security updates.
+
+## Sprint 41 (Completed)
+- Start timestamp: 2026-03-03 14:12:52 CST
+- Projected completion timestamp: 2026-03-03 14:15:22 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:15:55 CST
+- Duration: 00:03:03
+- High-level changes: deterministic debug-bundle exporter implemented with embedded and sidecar manifests.
+- Architectural decisions made: bundle generation now uses sorted path ordering and fixed tar/gzip metadata to ensure reproducible output bytes.
+- Debt introduced: bundle selection policies (PII/redaction controls) are not yet implemented.
+- Debt resolved: missing R2-13 exportable debug bundle baseline.
+- Test coverage delta: added determinism and window-filtering bundle export tests plus manifest extraction validation.
+- Risk flags: large source exports may require streaming/chunked manifest strategies at higher scale.
+
+## Architecture Coherence Review (After Sprint 39)
+- Architecture coherence: artifact lifecycle now spans upload, resume, metadata enrichment, download authorization, and retention controls, aligned with storage durability and security guardrails.
+- Refactor debt: moderate; artifact packages should be composed behind one collector artifact facade to centralize status transitions and policy enforcement.
+- Naming consistency: `status`, `next_offset`, `checksum/sha256`, and retention field names remain coherent across packages and docs.
+- Config surface: token TTL, signing keys, and retention schedules still need full `CONFIG_SCHEMA` wiring for runtime operability.
+- Plugin security boundary review: unchanged; no AI/plugin runtime paths introduced.
+
 ## Architecture Coherence Review (After Sprint 36)
 - Architecture coherence: artifact plane now aligns with streaming invariants (append-only writes, deterministic offsets, finalize immutability) while remaining local-first and durable.
 - Refactor debt: moderate; artifact upload and stream reassembly share offset/idempotency patterns that should be unified behind common append primitives.
@@ -506,6 +573,6 @@
 
 - Sprint cadence mode: accelerated (minutes/hours)
 - Daily target: minimum 10 completed sprints/day
-- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14, Sprint 29 = 00:05:17, Sprint 30 = 00:02:04, Sprint 31 = 00:04:16, Sprint 32 = 00:02:38, Sprint 33 = 00:02:07, Sprint 34 = 00:01:28, Sprint 35 = 00:02:00, Sprint 36 = 00:01:32
-- Current projection duration (rolling average of last 3): 00:01:40
+- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14, Sprint 29 = 00:05:17, Sprint 30 = 00:02:04, Sprint 31 = 00:04:16, Sprint 32 = 00:02:38, Sprint 33 = 00:02:07, Sprint 34 = 00:01:28, Sprint 35 = 00:02:00, Sprint 36 = 00:01:32, Sprint 37 = 00:18:15, Sprint 38 = 00:02:16, Sprint 39 = 00:02:49, Sprint 40 = 00:02:26, Sprint 41 = 00:03:03
+- Current projection duration (rolling average of last 3): 00:02:46
 - Rolling projection rule: average of last 3 completed sprint durations
