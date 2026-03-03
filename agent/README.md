@@ -10,4 +10,5 @@ Current packages:
 - `agent/config` validated atomic persistence for local watch-path/pattern configuration.
 - `agent/fileid` cross-platform file identity detection with native and fallback modes.
 - `agent/rotation` deterministic rotation/truncation cursor reassignment decisions.
-- `agent/tailer` near-real-time poll-based append tailing built on cursor and rotation primitives.
+- `agent/tailer` near-real-time append tailing with max-size guardrails and bounded initial tail-context extraction helpers.
+- `agent/watcher` OS-native notification abstraction with deterministic native-to-polling fallback and adaptive polling tiers.

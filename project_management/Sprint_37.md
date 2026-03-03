@@ -1,27 +1,27 @@
-# Sprint 29
+# Sprint 37
 
 ## Sprint Metadata
-- Sprint Number: 29
+- Sprint Number: 37
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 13:15:25 CST
+- Start Time: 13:43:31 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 13:18:04 CST
+- Target End Time (Projected): 2026-03-03 13:45:11 CST
 - Actual Completion Time: Pending
 - Status: In Progress
 
 ## Sprint Goal
-Implement live tail backend primitives for control-plane streaming.
+Implement enriched artifact metadata model.
 
 ## Stories Included
-- R1-05 Live tail UI
+- R2-03 Artifact metadata model
 
 ## Files Modified
 - Pending
 
 ## Architectural Notes
-- Live-tail reads must remain bounded and deterministic.
-- Cursor behavior must support repeated polling without duplicate-heavy output.
+- Metadata schema evolution must be backward-compatible.
+- Additional metadata fields must remain optional and deterministic.
 
 ## Deviations From Plan
 - None so far.

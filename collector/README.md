@@ -4,7 +4,9 @@ Ingest adapters, admission control, buffering, and durable append-only storage i
 
 Current packages:
 
+- `collector/artifacts/upload` append-oriented artifact upload lifecycle with resume-state metadata and integrity hashing.
 - `collector/api/listing` deterministic source/file catalog listing primitives for UI integration.
+- `collector/api/livetail` bounded cursor-based stream polling primitives for live-tail UI integration.
 - `collector/api/search` bounded substring/regex search primitives over stream logs.
 - `collector/storage/layout` deterministic source/stream/artifact path helpers.
 - `collector/stream/reassembly` append-only stream reassembly and idempotent sequence processing primitives.

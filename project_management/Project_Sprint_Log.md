@@ -385,10 +385,127 @@
 - Test coverage delta: added config-store unit tests for validation, replace/add/remove, atomic persistence, and corruption recovery.
 - Risk flags: watch-rule volume limits may require explicit caps when remote policy distribution is introduced.
 
+## Sprint 29 (Completed)
+- Start timestamp: 2026-03-03 13:15:25 CST
+- Projected completion timestamp: 2026-03-03 13:18:04 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:20:42 CST
+- Duration: 00:05:17
+- High-level changes: bounded live-tail polling service implemented with cursor offsets, partial-line markers, and truncation signaling.
+- Architectural decisions made: explicit `next_offset` cursor model with byte/line hard caps adopted for control-plane stream polling.
+- Debt introduced: live-tail service is not yet wired into collector HTTP routes or websocket transport.
+- Debt resolved: missing R1-05 live-tail backend primitives.
+- Test coverage delta: added livetail unit tests for incremental polling, line/byte bounds, partial lines, and missing stream handling.
+- Risk flags: high-frequency UI polling may require per-source rate limiting once route wiring is introduced.
+
+## Sprint 30 (Completed)
+- Start timestamp: 2026-03-03 13:21:26 CST
+- Projected completion timestamp: 2026-03-03 13:25:08 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:23:30 CST
+- Duration: 00:02:04
+- High-level changes: cross-platform native watcher abstraction implemented with normalized operations and path-safe registration semantics.
+- Architectural decisions made: fsnotify-backed native watcher baseline adopted with idempotent close and normalized add/remove path handling.
+- Debt introduced: watcher fallback orchestration to poll-based mode is not yet integrated.
+- Debt resolved: missing R2-05 OS-native notification watcher primitives.
+- Test coverage delta: added watcher unit tests for path normalization, operation mapping, close idempotency, channel passthrough, and native watcher smoke creation.
+- Risk flags: backend-specific event burst behavior may require explicit debouncing in integration layers.
+
+## Architecture Coherence Review (After Sprint 30)
+- Architecture coherence: control-plane APIs (listing/search/livetail) and agent data collection primitives (poll tailer + native watcher) remain aligned with documented local-first and bounded-resource constraints.
+- Refactor debt: moderate; native watcher and poll tailer should be composed behind one runtime watcher manager with explicit fallback and backoff policies.
+- Naming consistency: `source_id`, `stream_id`, `next_offset`, and watcher operation naming remain consistent with protocol/docs.
+- Config surface: watcher selection/tuning remains code-defaulted and should be moved into `CONFIG_SCHEMA` before runtime wiring.
+- Plugin security boundary review: unchanged; no AI/plugin runtime code introduced.
+
+## Sprint 31 (Completed)
+- Start timestamp: 2026-03-03 13:24:18 CST
+- Projected completion timestamp: 2026-03-03 13:27:50 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:28:34 CST
+- Duration: 00:04:16
+- High-level changes: native-to-polling fallback orchestration and polling backend scanning implemented under `agent/watcher`.
+- Architectural decisions made: fallback watcher now preserves normalized watch registrations and emits explicit degradation errors when native backend fails.
+- Debt introduced: adaptive polling interval tuning tiers are not yet implemented.
+- Debt resolved: missing R2-06 polling fallback behavior.
+- Test coverage delta: added fallback and polling backend tests for failover transitions, event forwarding, and create/write/remove polling detection.
+- Risk flags: polling interval defaults may require workload-specific tuning for high-cardinality watch sets.
+
+## Sprint 32 (Completed)
+- Start timestamp: 2026-03-03 13:29:36 CST
+- Projected completion timestamp: 2026-03-03 13:33:28 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:32:14 CST
+- Duration: 00:02:38
+- High-level changes: adaptive hot/warm/cold polling policy implemented and integrated into fallback polling backend scan scheduling.
+- Architectural decisions made: polling cadence now derives from last-activity timestamps with normalized tier thresholds and bounded intervals.
+- Debt introduced: adaptive policy values are code-defaulted and not yet wired to runtime config.
+- Debt resolved: missing R2-07 adaptive polling tier behavior.
+- Test coverage delta: added adaptive policy tests plus polling backend tier-interval scan gating coverage.
+- Risk flags: workload calibration may be needed to tune default warm/cold thresholds.
+
+## Sprint 33 (Completed)
+- Start timestamp: 2026-03-03 13:33:03 CST
+- Projected completion timestamp: 2026-03-03 13:36:02 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:35:10 CST
+- Duration: 00:02:07
+- High-level changes: bounded initial tail-context extraction helper implemented for new-file discovery workflows.
+- Architectural decisions made: last-N context now uses bounded suffix reads with partial-prefix drop to avoid unbounded memory and malformed leading lines.
+- Debt introduced: context helper is not yet wired into watcher discovery emission flow.
+- Debt resolved: missing R2-09 initial context send primitive.
+- Test coverage delta: added tail-context tests for last-N ordering, bounded truncation, newline edge handling, and missing-file behavior.
+- Risk flags: context max-read defaults may need tuning for very long-line workloads.
+
+## Sprint 34 (Completed)
+- Start timestamp: 2026-03-03 13:35:59 CST
+- Projected completion timestamp: 2026-03-03 13:38:59 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:37:27 CST
+- Duration: 00:01:28
+- High-level changes: max-file-size guardrails added to tailer polling path with explicit skip signaling.
+- Architectural decisions made: file size policy is enforced pre-read via `os.Stat` and reported through `PollResult` skip metadata.
+- Debt introduced: max-size defaults are currently caller-provided and not yet globally config-wired.
+- Debt resolved: missing R2-10 max file size controls.
+- Test coverage delta: added tailer tests for under/at/over threshold behavior and skip metadata validation.
+- Risk flags: mixed workload tuning may be needed for source-specific size thresholds.
+
+## Sprint 35 (Completed)
+- Start timestamp: 2026-03-03 13:38:13 CST
+- Projected completion timestamp: 2026-03-03 13:40:17 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:40:13 CST
+- Duration: 00:02:00
+- High-level changes: artifact upload lifecycle primitives implemented with deterministic begin/append/finalize flow and metadata persistence.
+- Architectural decisions made: append offset checks enforce idempotent artifact growth; finalize computes and stores SHA-256 integrity hash.
+- Debt introduced: resumable/session-level upload orchestration is not yet implemented.
+- Debt resolved: missing R2-01 artifact upload support baseline.
+- Test coverage delta: added artifact lifecycle tests for append offsets, restart-safe appends, metadata persistence, and ID validation.
+- Risk flags: very large artifact finalize hash computation should be monitored for throughput impact.
+
+## Sprint 36 (Completed)
+- Start timestamp: 2026-03-03 13:41:03 CST
+- Projected completion timestamp: 2026-03-03 13:42:55 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:42:35 CST
+- Duration: 00:01:32
+- High-level changes: resumable upload semantics implemented via server-authoritative resume-state API and completed-artifact append rejection.
+- Architectural decisions made: resume offsets now derive from persisted metadata/file size and are returned with explicit status/can-resume semantics.
+- Debt introduced: resume API currently does not expose chunk-level checkpoint IDs for multi-client coordination.
+- Debt resolved: missing R2-02 resumable upload baseline semantics.
+- Test coverage delta: added resume-state lifecycle tests and append-after-finalize rejection coverage.
+- Risk flags: metadata/file-size divergence should be monitored if external processes mutate artifact files.
+
+## Architecture Coherence Review (After Sprint 36)
+- Architecture coherence: artifact plane now aligns with streaming invariants (append-only writes, deterministic offsets, finalize immutability) while remaining local-first and durable.
+- Refactor debt: moderate; artifact upload and stream reassembly share offset/idempotency patterns that should be unified behind common append primitives.
+- Naming consistency: `next_offset`, `status`, `can_resume`, and `sha256` fields are consistent with backlog intent and protocol terminology.
+- Config surface: artifact limits (size/chunk/finalize thresholds) remain mostly code-defaulted and should be mapped to `CONFIG_SCHEMA`.
+- Plugin security boundary review: unchanged; no AI/plugin runtime code introduced.
+
+## Architecture Coherence Review (After Sprint 33)
+- Architecture coherence: agent ingestion stack now includes watcher native/fallback tiers, adaptive polling, near-real-time tailing, and bounded initial context extraction, consistent with reliability and bounded-resource invariants.
+- Refactor debt: moderate; tailer context helper and watcher discovery should be composed through one orchestration pipeline with clear ordering guarantees.
+- Naming consistency: `send_last_n_lines`, `max_read_bytes`, and watcher mode terminology remain consistent with config and backlog language.
+- Config surface: adaptive polling and context-read bounds are still code defaults and should be wired into `CONFIG_SCHEMA` for runtime control.
+- Plugin security boundary review: unchanged; no AI/plugin execution paths introduced.
+
 ## Timing Projection Baseline
 
 - Sprint cadence mode: accelerated (minutes/hours)
 - Daily target: minimum 10 completed sprints/day
-- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14
-- Current projection duration (rolling average of last 3): 00:02:39
+- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14, Sprint 29 = 00:05:17, Sprint 30 = 00:02:04, Sprint 31 = 00:04:16, Sprint 32 = 00:02:38, Sprint 33 = 00:02:07, Sprint 34 = 00:01:28, Sprint 35 = 00:02:00, Sprint 36 = 00:01:32
+- Current projection duration (rolling average of last 3): 00:01:40
 - Rolling projection rule: average of last 3 completed sprint durations

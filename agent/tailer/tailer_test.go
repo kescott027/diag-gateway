@@ -175,3 +175,69 @@ func TestPollOnceDetectsRotationOrRollbackReopen(t *testing.T) {
 	}
 }
 
+func TestPollOnceMaxFileSizeControls(t *testing.T) {
+	dir := t.TempDir()
+	logPath := filepath.Join(dir, "size.log")
+	store, err := cursor.NewStore(filepath.Join(dir, "cursors.json"))
+	if err != nil {
+		t.Fatalf("new cursor store failed: %v", err)
+	}
+
+	makeTailer := func(maxMB int) *Tailer {
+		tlr, err := NewTailer(Config{
+			SourceID:      "source-1",
+			FileKey:       "size.log",
+			Path:          logPath,
+			ChunkSize:     1024,
+			MaxFileSizeMB: maxMB,
+		}, store, func(c Chunk) error { return nil })
+		if err != nil {
+			t.Fatalf("new tailer failed: %v", err)
+		}
+		return tlr
+	}
+
+	if err := os.WriteFile(logPath, []byte("tiny"), 0o600); err != nil {
+		t.Fatalf("write tiny log failed: %v", err)
+	}
+	under := makeTailer(1)
+	resUnder, err := under.PollOnce()
+	if err != nil {
+		t.Fatalf("under-threshold poll failed: %v", err)
+	}
+	if resUnder.Skipped {
+		t.Fatalf("did not expect under-threshold file to be skipped")
+	}
+
+	oneMB := make([]byte, 1024*1024)
+	if err := os.WriteFile(logPath, oneMB, 0o600); err != nil {
+		t.Fatalf("write at-threshold log failed: %v", err)
+	}
+	at := makeTailer(1)
+	resAt, err := at.PollOnce()
+	if err != nil {
+		t.Fatalf("at-threshold poll failed: %v", err)
+	}
+	if resAt.Skipped {
+		t.Fatalf("did not expect at-threshold file to be skipped")
+	}
+
+	overMB := make([]byte, 1024*1024+1)
+	if err := os.WriteFile(logPath, overMB, 0o600); err != nil {
+		t.Fatalf("write over-threshold log failed: %v", err)
+	}
+	over := makeTailer(1)
+	resOver, err := over.PollOnce()
+	if err != nil {
+		t.Fatalf("over-threshold poll failed: %v", err)
+	}
+	if !resOver.Skipped {
+		t.Fatalf("expected over-threshold file to be skipped")
+	}
+	if resOver.SkipReason == "" {
+		t.Fatalf("expected skip reason for over-threshold file")
+	}
+	if resOver.BytesRead != 0 || resOver.Chunks != 0 {
+		t.Fatalf("expected no reads/chunks when skipped, got %+v", resOver)
+	}
+}

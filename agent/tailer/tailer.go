@@ -18,11 +18,12 @@ const (
 
 // Config defines deterministic tailing behavior for a single file.
 type Config struct {
-	SourceID     string
-	FileKey      string
-	Path         string
-	PollInterval time.Duration
-	ChunkSize    int
+	SourceID      string
+	FileKey       string
+	Path          string
+	PollInterval  time.Duration
+	ChunkSize     int
+	MaxFileSizeMB int
 }
 
 // Chunk is emitted for each append payload segment.
@@ -40,10 +41,12 @@ type Chunk struct {
 
 // PollResult summarizes one polling cycle.
 type PollResult struct {
-	BytesRead int64           `json:"bytes_read"`
-	Chunks    int             `json:"chunks"`
-	Restarted bool            `json:"restarted"`
-	Action    rotation.Action `json:"action"`
+	BytesRead  int64           `json:"bytes_read"`
+	Chunks     int             `json:"chunks"`
+	Restarted  bool            `json:"restarted"`
+	Action     rotation.Action `json:"action"`
+	Skipped    bool            `json:"skipped"`
+	SkipReason string          `json:"skip_reason,omitempty"`
 }
 
 // ChunkHandler receives emitted chunks. Returning error stops the poll cycle.
@@ -74,6 +77,9 @@ func NewTailer(cfg Config, store rotation.CursorStore, handler ChunkHandler) (*T
 	if cfg.ChunkSize <= 0 {
 		cfg.ChunkSize = defaultChunkSize
 	}
+	if cfg.MaxFileSizeMB < 0 {
+		return nil, fmt.Errorf("max file size must be >= 0")
+	}
 	if handler == nil {
 		return nil, fmt.Errorf("chunk handler is required")
 	}
@@ -97,6 +103,15 @@ func (t *Tailer) PollOnce() (PollResult, error) {
 			return PollResult{}, nil
 		}
 		return PollResult{}, fmt.Errorf("stat path: %w", err)
+	}
+	if t.cfg.MaxFileSizeMB > 0 {
+		maxSizeBytes := int64(t.cfg.MaxFileSizeMB) * 1024 * 1024
+		if info.Size() > maxSizeBytes {
+			return PollResult{
+				Skipped:    true,
+				SkipReason: fmt.Sprintf("file size %d exceeds max %d bytes", info.Size(), maxSizeBytes),
+			}, nil
+		}
 	}
 
 	identity, err := fileid.Identify(t.cfg.Path, info)
