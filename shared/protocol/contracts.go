@@ -105,14 +105,15 @@ type Signal struct {
 // StreamOpen declares the start of a file stream.
 type StreamOpen struct {
 	Metadata
-	SourceID       string            `json:"source_id"`
-	Timestamp      time.Time         `json:"timestamp"`
-	StreamID       string            `json:"stream_id"`
-	LogicalPath    string            `json:"logical_path"`
-	FileIdentity   string            `json:"file_identity"`
-	InitialOffset  int64             `json:"initial_offset"`
-	FileSizeAtOpen int64             `json:"file_size_at_open"`
-	Attributes     map[string]string `json:"attributes,omitempty"`
+	SourceID               string            `json:"source_id"`
+	Timestamp              time.Time         `json:"timestamp"`
+	StreamID               string            `json:"stream_id"`
+	LogicalPath            string            `json:"logical_path"`
+	FileIdentity           string            `json:"file_identity"`
+	FileIdentityConfidence string            `json:"file_identity_confidence,omitempty"`
+	InitialOffset          int64             `json:"initial_offset"`
+	FileSizeAtOpen         int64             `json:"file_size_at_open"`
+	Attributes             map[string]string `json:"attributes,omitempty"`
 }
 
 // StreamChunk transports append-only data increments.

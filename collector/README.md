@@ -11,3 +11,4 @@ Current packages:
 - `collector/security/admission` certificate identity admission validator.
 - `collector/security/rotation` server certificate renewal policy and rotation helper.
 - `collector/security/revocation` immediate source/serial revocation service with append-only audit sink.
+- `collector/telemetry/lastseen` concurrency-safe source liveness tracker for last-seen visibility.

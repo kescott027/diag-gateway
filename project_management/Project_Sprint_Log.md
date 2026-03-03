@@ -256,21 +256,84 @@
 - Test coverage delta: cursor store tests added for save/load/delete and corruption fallback.
 - Risk flags: rotation safety requires native file identity model decision.
 
-## Sprint 20 (Blocked - Pending Decision)
+## Sprint 20 (Completed)
 - Start timestamp: 2026-03-03 12:01:22 CST
 - Projected completion timestamp: 2026-03-03 12:03:17 CST (rolling average)
-- Actual completion timestamp: Pending
-- High-level changes: rotation/truncation safety sprint initialized.
-- Architectural decisions made: Pending user decision on cross-platform file identity model.
-- Debt introduced: Pending.
-- Debt resolved: Pending.
-- Test coverage delta: Pending.
-- Risk flags: blocked on file identity strategy.
+- Actual completion timestamp: 2026-03-03 12:09:08 CST
+- Duration: 00:07:46
+- High-level changes: cross-platform file identity abstraction and deterministic rotation/truncation decision manager implemented.
+- Architectural decisions made: approved hybrid native+fallback file identity model and path-based fallback continuity comparison.
+- Debt introduced: fallback identity cannot perfectly distinguish all same-path replacement scenarios on platforms without native IDs.
+- Debt resolved: blocked rotation/truncation safety story R1-11.
+- Test coverage delta: added unit suites for `agent/fileid` and `agent/rotation`.
+- Risk flags: monitor fallback-mode false-negative rotation scenarios; elevate with richer watcher metadata in future sprint work.
+
+## Sprint 21 (Completed)
+- Start timestamp: 2026-03-03 12:15:00 CST
+- Projected completion timestamp: 2026-03-03 12:18:50 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 12:17:55 CST
+- Duration: 00:02:55
+- High-level changes: bounded poll-based near-real-time tailer implemented with chunk emission and cursor persistence updates.
+- Architectural decisions made: polling baseline fixed to 500ms with 64KiB chunk cap.
+- Debt introduced: transport wiring for emitted chunks remains pending.
+- Debt resolved: missing near-real-time append streaming primitive (R1-09 baseline).
+- Test coverage delta: added tailer tests for append-only resume, truncation reopen, and rotation/rollback reopen behavior.
+- Risk flags: polling defaults may require tuning under sustained high-EPS workloads.
+
+## Architecture Coherence Review (After Sprint 21)
+- Architecture coherence: core data-plane path is now consistent (spool, backpressure, cursor, identity, rotation, tailing).
+- Refactor debt: moderate; tailer callbacks should be wrapped in transport abstraction once ingest client is introduced.
+- Naming consistency: file-identity terminology (`file_identity`, `file_identity_confidence`) remains aligned across protocol and agent packages.
+- Config surface: poll interval/chunk size currently code-defaulted; config schema wiring is pending.
+- Plugin security boundary review: unchanged and still disabled.
+
+## Sprint 22 (Completed)
+- Start timestamp: 2026-03-03 12:18:44 CST
+- Projected completion timestamp: 2026-03-03 12:23:00 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 12:22:51 CST
+- Duration: 00:04:07
+- High-level changes: protocol integrity validation and fuzz harnesses added; sequence dedupe now checksum-aware.
+- Architectural decisions made: SHA-256 checksum validation adopted and dedupe conflict model expanded to include payload checksum.
+- Debt introduced: checksum computation overhead requires future throughput benchmarking under 20k EPS profile.
+- Debt resolved: missing R1-20 protocol fuzz/integrity test baseline.
+- Test coverage delta: fuzz targets added for checksum/length integrity and reassembly sequence/offset behavior.
+- Risk flags: fuzz runtime budgets should stay bounded to keep CI stable.
+
+## Sprint 23 (Completed)
+- Start timestamp: 2026-03-03 12:23:36 CST
+- Projected completion timestamp: 2026-03-03 12:28:32 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 12:26:49 CST
+- Duration: 00:03:13
+- High-level changes: shared structured logging with correlation IDs and reusable health/metrics HTTP handlers implemented.
+- Architectural decisions made: canonical JSON log schema and Prometheus-compatible metrics endpoint format adopted.
+- Debt introduced: logger/observability packages are not yet wired into collector runtime handlers.
+- Debt resolved: missing observability scaffolding stories R0-17 and R0-18.
+- Test coverage delta: logging and observability unit tests added.
+- Risk flags: runtime integration remains required to surface these outputs in running binaries.
+
+## Sprint 24 (Completed)
+- Start timestamp: 2026-03-03 12:26:49 CST
+- Projected completion timestamp: 2026-03-03 12:30:14 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 12:29:29 CST
+- Duration: 00:02:40
+- High-level changes: concurrency-safe source last-seen tracker implemented with staleness classification and pruning support.
+- Architectural decisions made: last-seen updates are monotonic per source; older timestamps are ignored.
+- Debt introduced: liveness tracker not yet connected to ingest event flow.
+- Debt resolved: missing agent last-seen visibility primitive (R1-18 baseline).
+- Test coverage delta: tracker unit tests added for stale classification, ordering, prune behavior, and concurrent access.
+- Risk flags: source cardinality growth may require bounded retention configuration in runtime wiring.
+
+## Architecture Coherence Review (After Sprint 24)
+- Architecture coherence: observability stack now covers logs, health/metrics endpoints, and liveness state primitives.
+- Refactor debt: moderate; shared observability packages should be integrated behind collector runtime facade to avoid ad-hoc wiring.
+- Naming consistency: `correlation_id`, `last_seen`, and `source_id` terminology remains consistent with protocol/docs.
+- Config surface: stale thresholds and prune windows are call-site configurable but not yet mapped to `CONFIG_SCHEMA`.
+- Plugin security boundary review: unchanged; no AI/plugin runtime paths introduced.
 
 ## Timing Projection Baseline
 
 - Sprint cadence mode: accelerated (minutes/hours)
 - Daily target: minimum 10 completed sprints/day
-- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06
-- Current projection duration (rolling average of last 3): 00:01:55
+- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40
+- Current projection duration (rolling average of last 3): 00:03:20
 - Rolling projection rule: average of last 3 completed sprint durations

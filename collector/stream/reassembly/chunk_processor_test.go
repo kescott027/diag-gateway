@@ -68,4 +68,9 @@ func TestChunkProcessorOutOfOrderAndConflict(t *testing.T) {
 	if !errors.Is(err, ErrSequenceConflict) {
 		t.Fatalf("expected sequence conflict error, got: %v", err)
 	}
+
+	_, err = p.ProcessChunk("source-1", "stream-seq2", 1, 0, []byte("abd"))
+	if !errors.Is(err, ErrSequenceConflict) {
+		t.Fatalf("expected checksum-based sequence conflict error, got: %v", err)
+	}
 }

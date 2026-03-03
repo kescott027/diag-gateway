@@ -1,28 +1,28 @@
 # Current Sprint
 
 ## Sprint
-- Sprint 20
+- Sprint 24
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 12:01:22 CST
+- Start Time: 12:26:49 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 12:03:17 CST
-- Actual End Time: Pending
-- Status: Blocked (Pending Decision)
+- Target End Time (Projected): 2026-03-03 12:30:14 CST
+- Actual End Time: 2026-03-03 12:29:29 CST
+- Status: Completed
 
 ## Sprint Goal
-Implement rotation/truncation safety based on stable file identity tracking.
+Implement agent last-seen visibility tracking primitives.
 
 ## Selected Stories
-- R1-11 Rotation/truncation safety
+- R1-18 Agent last-seen visibility
 
 ## Rationale for Selection
-- Cursor persistence is in place; safe rotation handling now requires robust file identity semantics.
+- Observability scaffold now exists; source liveness tracking is next for operational visibility.
 
 ## Acceptance Criteria Summary
-- File identity remains stable across appends and changes on each supported OS.
-- Truncation and rotation events are detected without false positives.
-- Cursor reassignment behavior is deterministic and testable.
+- Last-seen tracker updates per source deterministically.
+- Reads expose current last-seen timestamp and staleness status.
+- Concurrent update/read operations are race-safe and tested.
 
 ## Definition of Done (Sprint)
 - Documentation updates complete.
@@ -33,8 +33,8 @@ Implement rotation/truncation safety based on stable file identity tracking.
 - Sprint completion time logged for projection baseline updates.
 
 ## Risks
-- Incorrect identity model can cause data duplication or skipped log segments.
+- Clock and update ordering assumptions can cause stale/active misclassification.
 
 ## Required Architectural Review Areas
-- Platform-specific identity extraction strategy.
-- Fallback behavior when native identity primitives are unavailable.
+- Tracker cardinality bounds and retention behavior.
+- Integration boundaries between ingest/auth layers and liveness updates.

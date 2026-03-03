@@ -1,6 +1,8 @@
 package reassembly
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"sync"
@@ -22,6 +24,7 @@ type ProcessResult struct {
 type sequenceRecord struct {
 	offset int64
 	length int
+	sum    string
 }
 
 type sequenceState struct {
@@ -55,6 +58,8 @@ func (p *ChunkProcessor) ProcessChunk(sourceID, streamID string, sequence, offse
 		return ProcessResult{}, ErrInvalidSequence
 	}
 
+	sum := checksum(payload)
+
 	key := streamKey{sourceID: sourceID, streamID: streamID}
 
 	p.mu.Lock()
@@ -68,7 +73,7 @@ func (p *ChunkProcessor) ProcessChunk(sourceID, streamID string, sequence, offse
 	}
 
 	if prev, seen := state.processed[sequence]; seen {
-		if prev.offset != offset || prev.length != len(payload) {
+		if prev.offset != offset || prev.length != len(payload) || prev.sum != sum {
 			p.mu.Unlock()
 			return ProcessResult{}, fmt.Errorf("%w: sequence=%d", ErrSequenceConflict, sequence)
 		}
@@ -91,13 +96,18 @@ func (p *ChunkProcessor) ProcessChunk(sourceID, streamID string, sequence, offse
 
 	p.mu.Lock()
 	state = p.states[key]
-	state.processed[sequence] = sequenceRecord{offset: offset, length: len(payload)}
+	state.processed[sequence] = sequenceRecord{offset: offset, length: len(payload), sum: sum}
 	state.next++
 	p.prune(state)
 	next := state.next
 	p.mu.Unlock()
 
 	return ProcessResult{Duplicate: false, NextExpectedSequence: next, CurrentOffset: newOffset}, nil
+}
+
+func checksum(payload []byte) string {
+	sum := sha256.Sum256(payload)
+	return hex.EncodeToString(sum[:])
 }
 
 func (p *ChunkProcessor) prune(state *sequenceState) {
