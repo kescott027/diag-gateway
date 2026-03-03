@@ -7,6 +7,7 @@ Current packages:
 - `collector/artifacts/download` signed, time-bounded artifact download-token generation and verification primitives.
 - `collector/artifacts/upload` append-oriented artifact upload lifecycle with resume-state metadata and integrity hashing.
 - `collector/bundles/exporter` deterministic debug-bundle export with embedded/sidecar manifest generation.
+- `collector/configpush` remote configuration lifecycle primitives (submit/apply/fail) with audit event hooks.
 - `collector/retention` per-source retention policy storage and deterministic stream/artifact pruning primitives.
 - `collector/retention/jobs` bounded retention/compaction scheduler runner with overlap protection and per-source execution summaries.
 - `collector/metadata/store` pluggable source/stream/artifact metadata store abstractions with memory and SQLite adapters.

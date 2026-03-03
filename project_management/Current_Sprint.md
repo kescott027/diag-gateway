@@ -1,28 +1,28 @@
 # Current Sprint
 
 ## Sprint
-- Sprint 51
+- Sprint 52
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 14:52:28 CST
+- Start Time: 14:56:11 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 14:56:21 CST
+- Target End Time (Projected): 2026-03-03 15:00:01 CST
 - Actual End Time: Pending
-- Status: In Progress
+- Status: Blocked (Decision Required)
 
 ## Sprint Goal
-Implement remote configuration update primitives with audit integration.
+Implement routing rules by source/tag/path.
 
 ## Selected Stories
-- R3-03 Remote config push with audit
+- R3-04 Routing rules
 
 ## Rationale for Selection
-- Enrollment/config audit trails are in place, unlocking secure remote-configuration orchestration primitives.
+- Dependencies from grouping (R3-02) and config/audit foundations are complete; routing is the next prerequisite for forwarding stories.
 
 ## Acceptance Criteria Summary
-- Config update model supports staged/pending/applied/failed lifecycle with deterministic IDs.
-- Audit events are emitted for submit/apply/fail transitions.
-- Unit tests cover lifecycle transitions, validation, and audit emission behavior.
+- Rule model supports selectors over `source_id`, `group_id`, `tags`, and logical path patterns.
+- Deterministic evaluation order and terminal action semantics are defined.
+- Unit tests cover precedence, conflict resolution, and default-route behavior.
 
 ## Definition of Done (Sprint)
 - Documentation updates complete.
@@ -33,8 +33,9 @@ Implement remote configuration update primitives with audit integration.
 - Sprint completion time logged for projection baseline updates.
 
 ## Risks
-- Unsafe config lifecycle transitions could cause uncontrolled agent behavior.
+- Ambiguous rule precedence/default behavior can create unsafe or non-deterministic forwarding outcomes.
 
 ## Required Architectural Review Areas
-- Delivery model safety (staging, apply acknowledgement, rollback semantics).
-- Audit linkage between config intent and execution outcome.
+- Rule language scope (glob vs regex) and validation boundaries.
+- Conflict resolution policy (first-match vs last-match vs priority).
+- Default action when no rule matches (drop vs local-only vs pass-through).

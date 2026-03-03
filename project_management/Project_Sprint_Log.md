@@ -656,6 +656,31 @@
 - Test coverage delta: added audit append validation, bounded query filter, limit, and time-window behavior tests.
 - Risk flags: large-scale retention/archival policy for audit logs remains to be defined.
 
+## Sprint 51 (Completed)
+- Start timestamp: 2026-03-03 14:52:28 CST
+- Projected completion timestamp: 2026-03-03 14:56:21 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:56:11 CST
+- Duration: 00:03:43
+- High-level changes: remote-config lifecycle primitives implemented with deterministic update IDs, pending/applied/failed transitions, bounded retention, and audit hooks.
+- Architectural decisions made: config updates now flow through explicit lifecycle states with transition guards and linked audit events.
+- Debt introduced: transport-level delivery/ack protocol between collector and agent remains to be implemented.
+- Debt resolved: baseline R3-03 remote-config lifecycle and audit integration primitives.
+- Test coverage delta: added config lifecycle validation, transition-guard, eviction, filter, and audit-emission tests.
+- Risk flags: distributed/agent-delivery semantics still require explicit rule/transport decisions.
+
+## Sprint 52 (Blocked - Decision Required)
+- Start timestamp: 2026-03-03 14:56:11 CST
+- Projected completion timestamp: 2026-03-03 15:00:01 CST (rolling average)
+- Blocker summary: routing rule engine semantics are under-specified for selector language, precedence/conflict resolution, and unmatched default behavior.
+- Required decision before implementation: choose one evaluation model to avoid incompatible forwarding behavior and rework.
+
+## Architecture Coherence Review (After Sprint 51)
+- Architecture coherence: security/control-plane foundation now spans RBAC, optional OIDC mapping, CRL enforcement, append-only audit logging, and auditable config-lifecycle state.
+- Refactor debt: moderate; audit emission should be centralized via shared event taxonomy to avoid action-name drift across packages.
+- Naming consistency: config lifecycle state names (`pending`, `applied`, `failed`) and security event action naming remain coherent with sprint docs.
+- Config surface: OIDC, CRL persistence, and configpush retention bounds need consolidated collector runtime configuration schema wiring.
+- Plugin security boundary review: unchanged; no AI/plugin execution pathways were introduced.
+
 ## Architecture Coherence Review (After Sprint 48)
 - Architecture coherence: security and fleet-management foundations now include RBAC, optional OIDC mapping, and canonical grouping metadata aligned to pluggable metadata store boundaries.
 - Refactor debt: moderate; metadata consumers (dashboard/retention) should progressively adopt shared source-metadata query services to avoid duplicate list/filter logic.
@@ -702,6 +727,6 @@
 
 - Sprint cadence mode: accelerated (minutes/hours)
 - Daily target: minimum 10 completed sprints/day
-- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14, Sprint 29 = 00:05:17, Sprint 30 = 00:02:04, Sprint 31 = 00:04:16, Sprint 32 = 00:02:38, Sprint 33 = 00:02:07, Sprint 34 = 00:01:28, Sprint 35 = 00:02:00, Sprint 36 = 00:01:32, Sprint 37 = 00:18:15, Sprint 38 = 00:02:16, Sprint 39 = 00:02:49, Sprint 40 = 00:02:26, Sprint 41 = 00:03:03, Sprint 42 = 00:02:40, Sprint 43 = 00:05:25, Sprint 44 = 00:05:42, Sprint 45 = 00:02:22, Sprint 46 = 00:03:09, Sprint 47 = 00:03:10, Sprint 48 = 00:03:54, Sprint 49 = 00:04:50, Sprint 50 = 00:02:56
-- Current projection duration (rolling average of last 3): 00:03:53
+- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14, Sprint 29 = 00:05:17, Sprint 30 = 00:02:04, Sprint 31 = 00:04:16, Sprint 32 = 00:02:38, Sprint 33 = 00:02:07, Sprint 34 = 00:01:28, Sprint 35 = 00:02:00, Sprint 36 = 00:01:32, Sprint 37 = 00:18:15, Sprint 38 = 00:02:16, Sprint 39 = 00:02:49, Sprint 40 = 00:02:26, Sprint 41 = 00:03:03, Sprint 42 = 00:02:40, Sprint 43 = 00:05:25, Sprint 44 = 00:05:42, Sprint 45 = 00:02:22, Sprint 46 = 00:03:09, Sprint 47 = 00:03:10, Sprint 48 = 00:03:54, Sprint 49 = 00:04:50, Sprint 50 = 00:02:56, Sprint 51 = 00:03:43
+- Current projection duration (rolling average of last 3): 00:03:50
 - Rolling projection rule: average of last 3 completed sprint durations
