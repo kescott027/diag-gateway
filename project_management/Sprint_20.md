@@ -1,29 +1,29 @@
-# Sprint 12
+# Sprint 20
 
 ## Sprint Metadata
-- Sprint Number: 12
+- Sprint Number: 20
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 11:37:11 CST
+- Start Time: 12:01:22 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 11:39:44 CST
+- Target End Time (Projected): 2026-03-03 12:03:17 CST
 - Actual Completion Time: Pending
 - Status: Blocked (Pending Decision)
 
 ## Sprint Goal
-Implement runtime client-credential rotation support for enrolled agents.
+Implement rotation/truncation safety based on stable file identity tracking.
 
 ## Stories Included
-- R1-16 Runtime credential rotation support
+- R1-11 Rotation/truncation safety
 
 ## Files Modified
 - Pending
 
 ## Architectural Notes
-- Blocked pending decision on rotated credential delivery mode.
+- Blocked pending file identity strategy decision for cross-platform consistency.
 
 ## Deviations From Plan
-- Sprint start blocked by architecture decision dependency.
+- Start blocked by unresolved identity model decision.
 
 ## Test Summary
 - Pending.
@@ -41,4 +41,4 @@ Implement runtime client-credential rotation support for enrolled agents.
 - Blocked
 
 ## Retrospective Notes
-- Awaiting user decision from Decision Matrix.
+- Awaiting decision recorded in Decision Matrix.

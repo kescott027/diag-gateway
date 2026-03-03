@@ -27,7 +27,7 @@ func TestExchangeIssuesClientCredential(t *testing.T) {
 	}
 
 	ex := NewExchanger(manager, CredentialConfig{PKIPaths: paths, ValidForDays: 30})
-	ex.now = func() time.Time { return fixed }
+	ex.issuer.now = func() time.Time { return fixed }
 
 	bundle, err := ex.ExchangeTokenForCredential(token, "source-123")
 	if err != nil {
@@ -78,5 +78,25 @@ func TestExchangeRejectsInvalidSourceID(t *testing.T) {
 	_, err = ex.ExchangeTokenForCredential(token, "bad/source")
 	if !errors.Is(err, ErrInvalidSourceID) {
 		t.Fatalf("expected invalid source id error, got: %v", err)
+	}
+}
+
+func TestIssuerIssuesCredentialWithoutEnrollmentToken(t *testing.T) {
+	tmp := t.TempDir()
+	paths, err := bootstrap.EnsureLocalPKI(bootstrap.Config{OutputDir: tmp})
+	if err != nil {
+		t.Fatalf("bootstrap pki failed: %v", err)
+	}
+
+	issuer := NewIssuer(CredentialConfig{PKIPaths: paths, ValidForDays: 1})
+	now := time.Date(2026, 3, 3, 11, 45, 0, 0, time.UTC)
+	issuer.now = func() time.Time { return now }
+
+	bundle, err := issuer.IssueForSource("source-renew")
+	if err != nil {
+		t.Fatalf("issue for source failed: %v", err)
+	}
+	if bundle.SourceID != "source-renew" {
+		t.Fatalf("unexpected source id: %s", bundle.SourceID)
 	}
 }

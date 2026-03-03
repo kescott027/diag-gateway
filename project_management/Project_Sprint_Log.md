@@ -153,21 +153,124 @@
 - Test coverage delta: rotation tests added for renewal-window and replacement behavior.
 - Risk flags: rollout safety depends on selecting a deterministic credential delivery model.
 
-## Sprint 12 (Blocked - Pending Decision)
+## Sprint 12 (Completed)
 - Start timestamp: 2026-03-03 11:37:11 CST
 - Projected completion timestamp: 2026-03-03 11:39:44 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 11:46:14 CST
+- Duration: 00:09:03
+- High-level changes: pull-based runtime credential rotation implemented with overlap-window revocation scheduling.
+- Architectural decisions made: pull-based renewal endpoint approved and implemented with min-issue-gap control.
+- Debt introduced: serial revocation map is in-memory and not yet persisted.
+- Debt resolved: blocked runtime credential rotation support (R1-16).
+- Test coverage delta: pull renewal and revocation-overlap tests added.
+- Risk flags: durable revocation persistence remains future hardening work.
+
+## Architecture Coherence Review (After Sprint 12)
+- Architecture coherence: security lifecycle remains coherent (bootstrap -> token -> credential exchange -> admission -> pull renewal).
+- Refactor debt: moderate; security packages should be composed behind a unified collector auth/orchestration service.
+- Naming consistency: `source_id` and serial-based revocation terminology remain consistent.
+- Config surface: renewal windows and overlap values currently code-defaulted; config wiring remains pending.
+- Plugin security boundary review: unchanged; no plugin/runtime expansion introduced.
+
+## Sprint 13 (Completed)
+- Start timestamp: 2026-03-03 11:46:19 CST
+- Projected completion timestamp: 2026-03-03 11:50:58 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 11:49:03 CST
+- Duration: 00:02:44
+- High-level changes: immediate source/serial revocation controls and audit sink implemented.
+- Architectural decisions made: immediate revocation operations include append-only audit events.
+- Debt introduced: revocation audit sink currently file-based only.
+- Debt resolved: missing immediate revocation control path (R1-17).
+- Test coverage delta: revocation service unit tests added.
+- Risk flags: durable centralized audit transport remains future work.
+
+## Sprint 14 (Completed)
+- Start timestamp: 2026-03-03 11:49:08 CST
+- Projected completion timestamp: 2026-03-03 11:54:03 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 11:50:50 CST
+- Duration: 00:01:42
+- High-level changes: STRIDE threat model formalized against implemented controls and residual risks.
+- Architectural decisions made: STRIDE format adopted as security governance baseline.
+- Debt introduced: none.
+- Debt resolved: previous threat model lacked explicit STRIDE mapping and residual-risk inventory.
+- Test coverage delta: N/A (documentation sprint), full test suite re-verified.
+- Risk flags: persistence/audit follow-ups identified and tracked.
+
+## Sprint 15 (Completed)
+- Start timestamp: 2026-03-03 11:50:56 CST
+- Projected completion timestamp: 2026-03-03 11:55:25 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 11:52:59 CST
+- Duration: 00:02:03
+- High-level changes: append-only stream reassembly package implemented.
+- Architectural decisions made: strict append-only write model with offset continuity enforcement.
+- Debt introduced: sequence dedupe/idempotency state not yet integrated.
+- Debt resolved: missing deterministic stream write/reassembly primitives.
+- Test coverage delta: reassembly unit tests added for append path and restart continuity.
+- Risk flags: idempotent dedupe still needed for full retry safety.
+
+## Sprint 16 (Completed)
+- Start timestamp: 2026-03-03 11:53:04 CST
+- Projected completion timestamp: 2026-03-03 11:55:14 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 11:55:12 CST
+- Duration: 00:02:08
+- High-level changes: idempotent sequence-aware chunk processor implemented.
+- Architectural decisions made: `(stream_id, sequence)` dedupe with bounded replay window and conflict detection.
+- Debt introduced: state persistence for sequence dedupe remains in-memory.
+- Debt resolved: missing duplicate-safe chunk behavior (R1-07).
+- Test coverage delta: chunk-processor tests added for duplicate, out-of-order, and conflict cases.
+- Risk flags: in-memory dedupe state recovery across restarts remains future work.
+
+## Sprint 17 (Completed)
+- Start timestamp: 2026-03-03 11:55:17 CST
+- Projected completion timestamp: 2026-03-03 11:57:15 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 11:57:16 CST
+- Duration: 00:01:59
+- High-level changes: durable disk-backed agent spool queue implemented.
+- Architectural decisions made: persisted head/tail state with filesystem rebuild fallback.
+- Debt introduced: queue compaction/segment optimization is not yet implemented.
+- Debt resolved: missing disk-backed outage-tolerant buffering.
+- Test coverage delta: spool queue tests added for FIFO persistence and capacity enforcement.
+- Risk flags: large queue directories may require segmenting strategy at higher scale.
+
+## Sprint 18 (Completed)
+- Start timestamp: 2026-03-03 11:57:24 CST
+- Projected completion timestamp: 2026-03-03 11:59:27 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 11:59:03 CST
+- Duration: 00:01:39
+- High-level changes: deterministic backpressure controller implemented for spool utilization.
+- Architectural decisions made: multi-level utilization policy with explicit producer actions.
+- Debt introduced: threshold tuning still needs empirical load calibration.
+- Debt resolved: missing bounded backpressure behavior primitive (R1-13).
+- Test coverage delta: backpressure controller tests added for all pressure levels.
+- Risk flags: policy thresholds may need environment-specific adjustment.
+
+## Sprint 19 (Completed)
+- Start timestamp: 2026-03-03 11:59:09 CST
+- Projected completion timestamp: 2026-03-03 12:01:04 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 12:01:15 CST
+- Duration: 00:02:06
+- High-level changes: durable cursor persistence with corruption fallback implemented.
+- Architectural decisions made: atomic JSON snapshot cursor storage with corrupt-file backup.
+- Debt introduced: platform-specific file identity extraction not yet implemented.
+- Debt resolved: missing restart-safe cursor checkpoint persistence.
+- Test coverage delta: cursor store tests added for save/load/delete and corruption fallback.
+- Risk flags: rotation safety requires native file identity model decision.
+
+## Sprint 20 (Blocked - Pending Decision)
+- Start timestamp: 2026-03-03 12:01:22 CST
+- Projected completion timestamp: 2026-03-03 12:03:17 CST (rolling average)
 - Actual completion timestamp: Pending
-- High-level changes: runtime credential rotation sprint initialized.
-- Architectural decisions made: Pending user decision on delivery model.
+- High-level changes: rotation/truncation safety sprint initialized.
+- Architectural decisions made: Pending user decision on cross-platform file identity model.
 - Debt introduced: Pending.
 - Debt resolved: Pending.
 - Test coverage delta: Pending.
-- Risk flags: blocked on rotation delivery architecture decision.
+- Risk flags: blocked on file identity strategy.
 
 ## Timing Projection Baseline
 
 - Sprint cadence mode: accelerated (minutes/hours)
 - Daily target: minimum 10 completed sprints/day
-- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58
-- Current projection duration (rolling average of last 3): 00:02:33
+- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06
+- Current projection duration (rolling average of last 3): 00:01:55
 - Rolling projection rule: average of last 3 completed sprint durations

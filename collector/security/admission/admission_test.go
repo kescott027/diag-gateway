@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"errors"
+	"math/big"
 	"testing"
 	"time"
 )
@@ -95,4 +96,34 @@ func TestValidatePeerCertificateRejectsInvalidCert(t *testing.T) {
 	if !errors.Is(err, ErrInvalidCertificateTime) {
 		t.Fatalf("expected cert-time error, got: %v", err)
 	}
+}
+
+func TestValidatePeerCertificateRejectsRevokedSerial(t *testing.T) {
+	registry := NewInMemoryRegistry()
+	registry.SetStatus("source-1", SourceStatusActive)
+	revocations := &stubRevocations{items: map[string]bool{"1001": true}}
+
+	validator := NewValidatorWithRevocation(registry, revocations)
+	now := time.Date(2026, 3, 3, 11, 50, 0, 0, time.UTC)
+	validator.now = func() time.Time { return now }
+
+	cert := &x509.Certificate{
+		SerialNumber: big.NewInt(1001),
+		Subject:      pkix.Name{CommonName: "source-1"},
+		NotBefore:    now.Add(-1 * time.Minute),
+		NotAfter:     now.Add(1 * time.Hour),
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}
+	_, err := validator.ValidatePeerCertificate(cert)
+	if !errors.Is(err, ErrRevokedCertificate) {
+		t.Fatalf("expected revoked-certificate error, got: %v", err)
+	}
+}
+
+type stubRevocations struct {
+	items map[string]bool
+}
+
+func (s *stubRevocations) IsRevoked(serial string) bool {
+	return s.items[serial]
 }

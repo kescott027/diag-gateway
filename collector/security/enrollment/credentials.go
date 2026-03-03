@@ -39,38 +39,34 @@ type CredentialBundle struct {
 	ExpiresAt time.Time
 }
 
-// Exchanger redeems enrollment tokens and issues client credentials.
-type Exchanger struct {
-	tokens *Manager
-	cfg    CredentialConfig
-	now    func() time.Time
+// Issuer creates per-source client certificates signed by collector CA.
+type Issuer struct {
+	cfg CredentialConfig
+	now func() time.Time
 }
 
-func NewExchanger(tokens *Manager, cfg CredentialConfig) *Exchanger {
+func NewIssuer(cfg CredentialConfig) *Issuer {
 	if cfg.ValidForDays <= 0 {
 		cfg.ValidForDays = 30
 	}
 	if cfg.IssuerOrgName == "" {
 		cfg.IssuerOrgName = "diag-gateway"
 	}
-	return &Exchanger{tokens: tokens, cfg: cfg, now: time.Now}
+	return &Issuer{cfg: cfg, now: time.Now}
 }
 
-// ExchangeTokenForCredential redeems a valid token and issues a client cert for source identity.
-func (e *Exchanger) ExchangeTokenForCredential(token, sourceID string) (CredentialBundle, error) {
+// IssueForSource creates a client-auth certificate and key for source identity.
+func (i *Issuer) IssueForSource(sourceID string) (CredentialBundle, error) {
 	if !sourceIDPattern.MatchString(sourceID) {
 		return CredentialBundle{}, ErrInvalidSourceID
 	}
-	if _, err := e.tokens.RedeemToken(token); err != nil {
-		return CredentialBundle{}, err
-	}
 
-	caCert, caKey, err := loadCA(e.cfg.PKIPaths.CACertPath, e.cfg.PKIPaths.CAKeyPath)
+	caCert, caKey, err := loadCA(i.cfg.PKIPaths.CACertPath, i.cfg.PKIPaths.CAKeyPath)
 	if err != nil {
 		return CredentialBundle{}, err
 	}
 
-	now := e.now().UTC()
+	now := i.now().UTC()
 	clientKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		return CredentialBundle{}, fmt.Errorf("generate client key: %w", err)
@@ -80,11 +76,11 @@ func (e *Exchanger) ExchangeTokenForCredential(token, sourceID string) (Credenti
 		SerialNumber: serial(),
 		Subject: pkix.Name{
 			CommonName:   sourceID,
-			Organization: []string{e.cfg.IssuerOrgName},
+			Organization: []string{i.cfg.IssuerOrgName},
 		},
 		DNSNames:    []string{sourceID},
 		NotBefore:   now.Add(-1 * time.Hour),
-		NotAfter:    now.Add(time.Duration(e.cfg.ValidForDays) * 24 * time.Hour),
+		NotAfter:    now.Add(time.Duration(i.cfg.ValidForDays) * 24 * time.Hour),
 		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
@@ -109,6 +105,24 @@ func (e *Exchanger) ExchangeTokenForCredential(token, sourceID string) (Credenti
 		IssuedAt:  now,
 		ExpiresAt: tpl.NotAfter,
 	}, nil
+}
+
+// Exchanger redeems enrollment tokens and issues client credentials.
+type Exchanger struct {
+	tokens *Manager
+	issuer *Issuer
+}
+
+func NewExchanger(tokens *Manager, cfg CredentialConfig) *Exchanger {
+	return &Exchanger{tokens: tokens, issuer: NewIssuer(cfg)}
+}
+
+// ExchangeTokenForCredential redeems a valid token and issues a client cert for source identity.
+func (e *Exchanger) ExchangeTokenForCredential(token, sourceID string) (CredentialBundle, error) {
+	if _, err := e.tokens.RedeemToken(token); err != nil {
+		return CredentialBundle{}, err
+	}
+	return e.issuer.IssueForSource(sourceID)
 }
 
 func loadCA(certPath, keyPath string) (*x509.Certificate, *ecdsa.PrivateKey, error) {

@@ -1,28 +1,28 @@
 # Current Sprint
 
 ## Sprint
-- Sprint 12
+- Sprint 20
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 11:37:11 CST
+- Start Time: 12:01:22 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 11:39:44 CST
+- Target End Time (Projected): 2026-03-03 12:03:17 CST
 - Actual End Time: Pending
 - Status: Blocked (Pending Decision)
 
 ## Sprint Goal
-Implement runtime client-credential rotation support for enrolled agents.
+Implement rotation/truncation safety based on stable file identity tracking.
 
 ## Selected Stories
-- R1-16 Runtime credential rotation support
+- R1-11 Rotation/truncation safety
 
 ## Rationale for Selection
-- Rotation policy primitives are complete; runtime delivery is the next dependency for full lifecycle support.
+- Cursor persistence is in place; safe rotation handling now requires robust file identity semantics.
 
 ## Acceptance Criteria Summary
-- Agent can obtain rotated credentials before current cert expiry.
-- Collector can invalidate old credentials after successful rollover.
-- Rotation events are auditable and replay-safe.
+- File identity remains stable across appends and changes on each supported OS.
+- Truncation and rotation events are detected without false positives.
+- Cursor reassignment behavior is deterministic and testable.
 
 ## Definition of Done (Sprint)
 - Documentation updates complete.
@@ -33,8 +33,8 @@ Implement runtime client-credential rotation support for enrolled agents.
 - Sprint completion time logged for projection baseline updates.
 
 ## Risks
-- Incorrect delivery model could create credential desynchronization or service interruptions.
+- Incorrect identity model can cause data duplication or skipped log segments.
 
 ## Required Architectural Review Areas
-- Pull vs push credential delivery model.
-- Agent/collector rollover sequencing and rollback behavior.
+- Platform-specific identity extraction strategy.
+- Fallback behavior when native identity primitives are unavailable.

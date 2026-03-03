@@ -16,6 +16,7 @@ var (
 	ErrInvalidSourceIdentity  = errors.New("invalid source identity in certificate")
 	ErrUnknownSourceIdentity  = errors.New("unknown source identity")
 	ErrInactiveSourceIdentity = errors.New("inactive source identity")
+	ErrRevokedCertificate     = errors.New("revoked certificate serial")
 )
 
 // SourceStatus defines allowed admission states for a source identity.
@@ -31,6 +32,11 @@ const (
 // Registry returns source identity status for admission checks.
 type Registry interface {
 	GetStatus(sourceID string) SourceStatus
+}
+
+// RevocationChecker indicates whether a certificate serial has been revoked.
+type RevocationChecker interface {
+	IsRevoked(serial string) bool
 }
 
 // InMemoryRegistry provides deterministic status checks for current source identities.
@@ -60,12 +66,23 @@ func (r *InMemoryRegistry) GetStatus(sourceID string) SourceStatus {
 
 // Validator authenticates peer identity and enforces source admission policy.
 type Validator struct {
-	registry Registry
-	now      func() time.Time
+	registry    Registry
+	revocations RevocationChecker
+	now         func() time.Time
 }
 
 func NewValidator(registry Registry) *Validator {
 	return &Validator{registry: registry, now: time.Now}
+}
+
+func NewValidatorWithRevocation(registry Registry, revocations RevocationChecker) *Validator {
+	return &Validator{registry: registry, revocations: revocations, now: time.Now}
+}
+
+func (v *Validator) SetNow(now func() time.Time) {
+	if now != nil {
+		v.now = now
+	}
 }
 
 // ValidatePeerCertificate validates cert posture and source activity status.
@@ -80,6 +97,9 @@ func (v *Validator) ValidatePeerCertificate(cert *x509.Certificate) (string, err
 	now := v.now().UTC()
 	if now.Before(cert.NotBefore) || now.After(cert.NotAfter) {
 		return "", ErrInvalidCertificateTime
+	}
+	if v.revocations != nil && cert.SerialNumber != nil && v.revocations.IsRevoked(cert.SerialNumber.String()) {
+		return "", ErrRevokedCertificate
 	}
 
 	sourceID, err := extractSourceID(cert)
