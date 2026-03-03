@@ -35,7 +35,8 @@ jobs:
         run: |
           mkdir -p dist
           if [ -f go.mod ]; then
-            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/diag-gateway-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} ./...
+            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build ./...
+            printf "build ok for %s/%s\n" "${{ matrix.goos }}" "${{ matrix.goarch }}" > dist/build-${{ matrix.goos }}-${{ matrix.goarch }}.txt
           else
             echo "No go.mod yet, skipping build for ${{ matrix.goos }}/${{ matrix.goarch }}."
             touch dist/skip-${{ matrix.goos }}-${{ matrix.goarch }}.txt
