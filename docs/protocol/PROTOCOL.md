@@ -200,6 +200,8 @@ Gap handling:
 Rotation/truncation:
 
 - identity change or offset rollback requires new `stream_id`
+- `StreamOpen.file_identity_confidence` indicates `strong` (native id) or `fallback` (path/size/mtime)
+- fallback identity continuity is path-based; offset rollback remains the truncation trigger
 
 ## 12. Backpressure and Degradation Behavior
 

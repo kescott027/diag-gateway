@@ -1,0 +1,49 @@
+name: Build Matrix
+
+on:
+  push:
+    branches: [main, "factory/**"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            ext: ""
+          - goos: darwin
+            goarch: arm64
+            ext: ""
+          - goos: windows
+            goarch: amd64
+            ext: ".exe"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build binaries (if Go module exists)
+        run: |
+          mkdir -p dist
+          if [ -f go.mod ]; then
+            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build ./...
+            printf "build ok for %s/%s\n" "${{ matrix.goos }}" "${{ matrix.goarch }}" > dist/build-${{ matrix.goos }}-${{ matrix.goarch }}.txt
+          else
+            echo "No go.mod yet, skipping build for ${{ matrix.goos }}/${{ matrix.goarch }}."
+            touch dist/skip-${{ matrix.goos }}-${{ matrix.goarch }}.txt
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
