@@ -1,29 +1,28 @@
 # Current Sprint
 
 ## Sprint
-- Sprint 3
+- Sprint 12
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 11:12:49 CST
+- Start Time: 11:37:11 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 12:12:49 CST (provisional)
+- Target End Time (Projected): 2026-03-03 11:39:44 CST
 - Actual End Time: Pending
+- Status: Blocked (Pending Decision)
 
 ## Sprint Goal
-Establish CI quality gates and cross-platform build automation baseline.
+Implement runtime client-credential rotation support for enrolled agents.
 
 ## Selected Stories
-- R0-04 Linting and formatting enforcement in CI
-- R0-13 CI unit/race/lint quality gates
-- R0-14 Cross-platform build automation
+- R1-16 Runtime credential rotation support
 
 ## Rationale for Selection
-- These stories create reliable automated quality checks needed before implementing core runtime behavior.
+- Rotation policy primitives are complete; runtime delivery is the next dependency for full lifecycle support.
 
 ## Acceptance Criteria Summary
-- CI workflow executes structure validation, lint/test checks, and race checks where toolchains exist.
-- Build matrix workflow produces artifacts for Linux/macOS/Windows targets when Go module exists.
-- Local command surface remains consistent with CI behavior.
+- Agent can obtain rotated credentials before current cert expiry.
+- Collector can invalidate old credentials after successful rollover.
+- Rotation events are auditable and replay-safe.
 
 ## Definition of Done (Sprint)
 - Documentation updates complete.
@@ -34,8 +33,8 @@ Establish CI quality gates and cross-platform build automation baseline.
 - Sprint completion time logged for projection baseline updates.
 
 ## Risks
-- CI placeholders may require updates once concrete modules and dependencies are added.
+- Incorrect delivery model could create credential desynchronization or service interruptions.
 
 ## Required Architectural Review Areas
-- Ensure CI flow remains compatible with cross-platform runtime targets.
-- Ensure automation does not mask protocol/security regressions once runtime code is introduced.
+- Pull vs push credential delivery model.
+- Agent/collector rollover sequencing and rollback behavior.

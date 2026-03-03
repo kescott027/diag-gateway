@@ -21,8 +21,13 @@
 - `make bootstrap` to verify required repository structure.
 - `make check` to run lint and tests when toolchains are present.
 - `make build` to execute build pipelines when modules exist.
+- `make release-artifacts VERSION=x.y.z` to create release archives and checksum manifests.
 
 ## Architecture Decisions
 
 - Create ADRs from `docs/architecture/ADR_TEMPLATE.md`.
 - Add each new ADR to `docs/architecture/ADR_INDEX.md`.
+
+## Versioning and Commits
+
+- Follow conventional commits and semantic versioning rules in `docs/planning/VERSIONING_AND_COMMITS.md`.
