@@ -15,3 +15,14 @@
 2. Implement only stories in `project_management/Current_Sprint.md`.
 3. Log architectural-impact decisions in `project_management/Decision_Matrix.md`.
 4. Close sprint with test summary, security summary, and architecture summary.
+
+## Standard Commands
+
+- `make bootstrap` to verify required repository structure.
+- `make check` to run lint and tests when toolchains are present.
+- `make build` to execute build pipelines when modules exist.
+
+## Architecture Decisions
+
+- Create ADRs from `docs/architecture/ADR_TEMPLATE.md`.
+- Add each new ADR to `docs/architecture/ADR_INDEX.md`.

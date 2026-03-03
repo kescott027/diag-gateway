@@ -1,34 +1,29 @@
 # Current Sprint
 
 ## Sprint
-- Sprint 1
+- Sprint 3
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 11:00:30 CST
+- Start Time: 11:12:49 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 12:00:30 CST (provisional)
+- Target End Time (Projected): 2026-03-03 12:12:49 CST (provisional)
 - Actual End Time: Pending
 
 ## Sprint Goal
-Establish READY-stage governance, normalized documentation, and enforceable development guardrails so implementation can begin without architectural drift.
+Establish CI quality gates and cross-platform build automation baseline.
 
 ## Selected Stories
-- PM-01 Documentation normalization and taxonomy
-- PM-02 Sprint management framework bootstrap
-- PM-03 READY gate definition
-- PM-04 Decision logging baseline
-- PM-05 Architecture coherence cadence
+- R0-04 Linting and formatting enforcement in CI
+- R0-13 CI unit/race/lint quality gates
+- R0-14 Cross-platform build automation
 
 ## Rationale for Selection
-- These stories unblock all implementation while reducing security/protocol drift risk.
-- They create one source of truth for prioritization, decisions, and sprint closure requirements.
+- These stories create reliable automated quality checks needed before implementing core runtime behavior.
 
 ## Acceptance Criteria Summary
-- All planning/architecture docs are moved to `/docs` taxonomy.
-- `/project_management` files exist and are populated.
-- Backlog is normalized in strict priority order with dependencies/risk/architectural impact.
-- READY gate includes quality guardrails and global invariants.
-- Architectural-impact decisions from kickoff are logged.
+- CI workflow executes structure validation, lint/test checks, and race checks where toolchains exist.
+- Build matrix workflow produces artifacts for Linux/macOS/Windows targets when Go module exists.
+- Local command surface remains consistent with CI behavior.
 
 ## Definition of Done (Sprint)
 - Documentation updates complete.
@@ -39,11 +34,8 @@ Establish READY-stage governance, normalized documentation, and enforceable deve
 - Sprint completion time logged for projection baseline updates.
 
 ## Risks
-- Source docs may conflict on protocol/deployment detail depth.
-- Early backlog normalization may require re-ordering after first implementation feedback.
+- CI placeholders may require updates once concrete modules and dependencies are added.
 
 ## Required Architectural Review Areas
-- Protocol backward compatibility and v1 field requirements.
-- Storage and append-only invariants.
-- Overload degradation behavior and bounded state assumptions.
-- AI/plugin deferment until streaming stability.
+- Ensure CI flow remains compatible with cross-platform runtime targets.
+- Ensure automation does not mask protocol/security regressions once runtime code is introduced.

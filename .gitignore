@@ -70,6 +70,10 @@ temp/
 /collector-data/
 /workspace-data/
 /artifacts/
+/agent-data/
+/spool/
+/collector/spool/
+/agent/spool/
 
 # =========================
 
@@ -135,4 +139,3 @@ docker-data/
 test-output/
 reports/
 benchmarks/
-
