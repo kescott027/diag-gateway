@@ -1,28 +1,28 @@
 # Current Sprint
 
 ## Sprint
-- Sprint 42
+- Sprint 44
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 14:16:46 CST
+- Start Time: 14:26:25 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 14:19:32 CST
+- Target End Time (Projected): 2026-03-03 14:30:08 CST
 - Actual End Time: Pending
 - Status: In Progress
 
 ## Sprint Goal
-Implement per-source dashboard backend aggregation primitives.
+Implement retention and compaction job orchestration primitives.
 
 ## Selected Stories
-- R2-11 Per-source dashboard UX
+- R3-08 Retention/compaction jobs
 
 ## Rationale for Selection
-- Core source telemetry/listing/search primitives exist; dashboard aggregation is the next usability step.
+- R3-07 baseline is complete and the next prioritized dependency is automated retention/compaction execution at scale.
 
 ## Acceptance Criteria Summary
-- Dashboard service returns consolidated per-source summary cards (liveness, throughput, errors, queue, stream/artifact counts).
-- Service output is deterministic and supports source filtering.
-- Unit tests validate aggregation and empty-source behavior.
+- Job runner supports deterministic, bounded retention scheduling per source.
+- Compaction path exists for periodic metrics/state compaction hooks.
+- Unit tests validate schedule gating, execution summaries, and overload-safe behavior.
 
 ## Definition of Done (Sprint)
 - Documentation updates complete.
@@ -33,8 +33,8 @@ Implement per-source dashboard backend aggregation primitives.
 - Sprint completion time logged for projection baseline updates.
 
 ## Risks
-- Inconsistent cross-service joins could produce misleading source-level summaries.
+- Poor scheduling semantics could trigger overlapping cleanup cycles and unstable I/O behavior.
 
 ## Required Architectural Review Areas
-- Summary contract stability for future UI integration.
-- Data freshness and staleness semantics across metrics/liveness/catalog sources.
+- Job execution isolation and overlap prevention.
+- Compatibility with future distributed/HA execution models.

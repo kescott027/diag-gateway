@@ -1,27 +1,27 @@
-# Sprint 42
+# Sprint 44
 
 ## Sprint Metadata
-- Sprint Number: 42
+- Sprint Number: 44
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 14:16:46 CST
+- Start Time: 14:26:25 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 14:19:32 CST
+- Target End Time (Projected): 2026-03-03 14:30:08 CST
 - Actual Completion Time: Pending
 - Status: In Progress
 
 ## Sprint Goal
-Implement per-source dashboard backend aggregation primitives.
+Implement retention and compaction job orchestration primitives.
 
 ## Stories Included
-- R2-11 Per-source dashboard UX
+- R3-08 Retention/compaction jobs
 
 ## Files Modified
 - Pending
 
 ## Architectural Notes
-- Dashboard summary contracts must remain deterministic and composable.
-- Aggregation should rely on existing source metrics/liveness/listing primitives.
+- Job scheduling must avoid overlapping runs and preserve bounded memory usage.
+- Retention and compaction paths should expose deterministic summaries for observability.
 
 ## Deviations From Plan
 - None so far.

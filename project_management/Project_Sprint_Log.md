@@ -548,6 +548,37 @@
 - Test coverage delta: added determinism and window-filtering bundle export tests plus manifest extraction validation.
 - Risk flags: large source exports may require streaming/chunked manifest strategies at higher scale.
 
+## Sprint 42 (Completed)
+- Start timestamp: 2026-03-03 14:16:46 CST
+- Projected completion timestamp: 2026-03-03 14:19:32 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:19:26 CST
+- Duration: 00:02:40
+- High-level changes: per-source dashboard aggregation backend implemented by composing listing, liveness, metrics, and artifact-count data.
+- Architectural decisions made: deterministic union-and-sort source aggregation chosen as summary contract baseline.
+- Debt introduced: dashboard service is not yet connected to HTTP/UI handlers.
+- Debt resolved: missing R2-11 per-source dashboard backend primitives.
+- Test coverage delta: added dashboard service tests for deterministic ordering, filtering, and telemetry aggregation behavior.
+- Risk flags: very large source fleets may require pagination and cached summary snapshots.
+
+## Sprint 43 (Completed)
+- Start timestamp: 2026-03-03 14:20:17 CST
+- Projected completion timestamp: 2026-03-03 14:23:00 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 14:25:42 CST
+- Duration: 00:05:25
+- High-level changes: pluggable metadata store package implemented with backend-neutral contract and parity adapters for memory and SQLite.
+- Architectural decisions made: metadata operations now standardize on deterministic ordering and shared not-found semantics (`ErrNotFound`) across adapters.
+- Debt introduced: Postgres adapter and transactional migration tooling are not yet implemented.
+- Debt resolved: missing R3-07 pluggable metadata storage baseline.
+- Test coverage delta: added cross-adapter contract tests for source/stream/artifact upsert/get/list behavior and validation paths.
+- Risk flags: SQLite-only operational tuning remains to be documented for high-concurrency production workloads.
+
+## Architecture Coherence Review (After Sprint 42)
+- Architecture coherence: storage and control-plane primitives now include artifact lifecycle, retention policy/pruning, dashboard aggregation, and metadata abstraction boundaries with deterministic contracts.
+- Refactor debt: moderate; retention/dashboard services should progressively adopt metadata store abstraction to avoid mixed filesystem+metadata joins.
+- Naming consistency: `source_id`, `stream_id`, `artifact_id`, `status`, and timestamp field naming remain consistent across R2/R3 packages.
+- Config surface: metadata backend selection and sqlite path tuning are still code-defaulted and should be mapped to `CONFIG_SCHEMA`.
+- Plugin security boundary review: unchanged; no AI/plugin execution or remote code paths introduced.
+
 ## Architecture Coherence Review (After Sprint 39)
 - Architecture coherence: artifact lifecycle now spans upload, resume, metadata enrichment, download authorization, and retention controls, aligned with storage durability and security guardrails.
 - Refactor debt: moderate; artifact packages should be composed behind one collector artifact facade to centralize status transitions and policy enforcement.
@@ -573,6 +604,6 @@
 
 - Sprint cadence mode: accelerated (minutes/hours)
 - Daily target: minimum 10 completed sprints/day
-- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14, Sprint 29 = 00:05:17, Sprint 30 = 00:02:04, Sprint 31 = 00:04:16, Sprint 32 = 00:02:38, Sprint 33 = 00:02:07, Sprint 34 = 00:01:28, Sprint 35 = 00:02:00, Sprint 36 = 00:01:32, Sprint 37 = 00:18:15, Sprint 38 = 00:02:16, Sprint 39 = 00:02:49, Sprint 40 = 00:02:26, Sprint 41 = 00:03:03
-- Current projection duration (rolling average of last 3): 00:02:46
+- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14, Sprint 29 = 00:05:17, Sprint 30 = 00:02:04, Sprint 31 = 00:04:16, Sprint 32 = 00:02:38, Sprint 33 = 00:02:07, Sprint 34 = 00:01:28, Sprint 35 = 00:02:00, Sprint 36 = 00:01:32, Sprint 37 = 00:18:15, Sprint 38 = 00:02:16, Sprint 39 = 00:02:49, Sprint 40 = 00:02:26, Sprint 41 = 00:03:03, Sprint 42 = 00:02:40, Sprint 43 = 00:05:25
+- Current projection duration (rolling average of last 3): 00:03:43
 - Rolling projection rule: average of last 3 completed sprint durations
