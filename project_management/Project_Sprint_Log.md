@@ -330,10 +330,65 @@
 - Config surface: stale thresholds and prune windows are call-site configurable but not yet mapped to `CONFIG_SCHEMA`.
 - Plugin security boundary review: unchanged; no AI/plugin runtime paths introduced.
 
+## Sprint 25 (Completed)
+- Start timestamp: 2026-03-03 13:01:46 CST
+- Projected completion timestamp: 2026-03-03 13:05:06 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:05:39 CST
+- Duration: 00:03:53
+- High-level changes: per-source bytes, queue-depth, and error-rate telemetry tracker implemented.
+- Architectural decisions made: fixed 60-second default rate window and monotonic queue-depth timestamp policy.
+- Debt introduced: tracker is not yet wired into collector ingest runtime emission path.
+- Debt resolved: missing R1-19 telemetry primitive baseline.
+- Test coverage delta: agentmetrics unit tests added for totals, rate windows, pruning, and concurrency.
+- Risk flags: rate interpretation in UI depends on documenting fixed-window semantics.
+
+## Sprint 26 (Completed)
+- Start timestamp: 2026-03-03 13:06:19 CST
+- Projected completion timestamp: 2026-03-03 13:09:45 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:08:26 CST
+- Duration: 00:02:07
+- High-level changes: deterministic source/file catalog listing service implemented for control-plane UI integration.
+- Architectural decisions made: backend listing contract with sorted entries and metadata fallback defaults adopted.
+- Debt introduced: catalog service is not yet wired into an HTTP route.
+- Debt resolved: missing R1-04 backend listing primitives.
+- Test coverage delta: listing unit tests added for sorting, invalid IDs, and empty catalog behavior.
+- Risk flags: large source counts may require pagination in future UI/API revisions.
+
+## Sprint 27 (Completed)
+- Start timestamp: 2026-03-03 13:08:26 CST
+- Projected completion timestamp: 2026-03-03 13:11:19 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:11:02 CST
+- Duration: 00:02:36
+- High-level changes: bounded substring/regex search service implemented for stream logs.
+- Architectural decisions made: on-demand line scanning with explicit max-result cap and invalid-regex rejection.
+- Debt introduced: search results are not yet backed by indexing for large-scale datasets.
+- Debt resolved: missing R1-06 search backend primitives.
+- Test coverage delta: search tests added for substring, regex, invalid regex, empty catalog, and result limits.
+- Risk flags: performance at large corpus scale depends on future indexing strategy.
+
+## Architecture Coherence Review (After Sprint 27)
+- Architecture coherence: control-plane backend primitives now cover listing, search, and source telemetry.
+- Refactor debt: moderate; API packages should be routed through unified HTTP layer to avoid contract drift.
+- Naming consistency: `source_id`, `stream_id`, and logical-path terminology remains consistent across APIs.
+- Config surface: search/result limits are code-defaulted and should be mapped into runtime config schema.
+- Plugin security boundary review: unchanged; AI/plugin code remains unimplemented.
+
+## Sprint 28 (Completed)
+- Start timestamp: 2026-03-03 13:11:37 CST
+- Projected completion timestamp: 2026-03-03 13:14:29 CST (rolling average)
+- Actual completion timestamp: 2026-03-03 13:14:51 CST
+- Duration: 00:03:14
+- High-level changes: validated agent configuration store implemented with atomic persistence and corruption fallback handling.
+- Architectural decisions made: HTTPS-only collector endpoint validation and duplicate-safe watch-rule policy adopted for local config state.
+- Debt introduced: configuration store is not yet wired to transport/runtime reload paths.
+- Debt resolved: missing R1-08 backend configuration primitives for local UI workflows.
+- Test coverage delta: added config-store unit tests for validation, replace/add/remove, atomic persistence, and corruption recovery.
+- Risk flags: watch-rule volume limits may require explicit caps when remote policy distribution is introduced.
+
 ## Timing Projection Baseline
 
 - Sprint cadence mode: accelerated (minutes/hours)
 - Daily target: minimum 10 completed sprints/day
-- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40
-- Current projection duration (rolling average of last 3): 00:03:20
+- Completed sprint durations: Sprint 1 = 00:09:15, Sprint 2 = 00:02:23, Sprint 3 = 00:04:10, Sprint 4 = 00:01:35, Sprint 5 = 00:03:00, Sprint 6 = 00:02:02, Sprint 7 = 00:02:39, Sprint 8 = 00:02:08, Sprint 9 = 00:02:46, Sprint 10 = 00:01:56, Sprint 11 = 00:02:58, Sprint 12 = 00:09:03, Sprint 13 = 00:02:44, Sprint 14 = 00:01:42, Sprint 15 = 00:02:03, Sprint 16 = 00:02:08, Sprint 17 = 00:01:59, Sprint 18 = 00:01:39, Sprint 19 = 00:02:06, Sprint 20 = 00:07:46, Sprint 21 = 00:02:55, Sprint 22 = 00:04:07, Sprint 23 = 00:03:13, Sprint 24 = 00:02:40, Sprint 25 = 00:03:53, Sprint 26 = 00:02:07, Sprint 27 = 00:02:36, Sprint 28 = 00:03:14
+- Current projection duration (rolling average of last 3): 00:02:39
 - Rolling projection rule: average of last 3 completed sprint durations

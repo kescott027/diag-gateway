@@ -1,28 +1,28 @@
 # Current Sprint
 
 ## Sprint
-- Sprint 24
+- Sprint 29
 - Sprint Mode: Accelerated (minutes/hours)
 - Start Date: 2026-03-03
-- Start Time: 12:26:49 CST
+- Start Time: 13:15:25 CST
 - Target Throughput: minimum 10 sprints per day
-- Target End Time (Projected): 2026-03-03 12:30:14 CST
-- Actual End Time: 2026-03-03 12:29:29 CST
-- Status: Completed
+- Target End Time (Projected): 2026-03-03 13:18:04 CST
+- Actual End Time: Pending
+- Status: In Progress
 
 ## Sprint Goal
-Implement agent last-seen visibility tracking primitives.
+Implement live tail backend primitives for control-plane streaming.
 
 ## Selected Stories
-- R1-18 Agent last-seen visibility
+- R1-05 Live tail UI
 
 ## Rationale for Selection
-- Observability scaffold now exists; source liveness tracking is next for operational visibility.
+- Listing and search backends are complete; live tail streaming is the next highest-priority unfinished story.
 
 ## Acceptance Criteria Summary
-- Last-seen tracker updates per source deterministically.
-- Reads expose current last-seen timestamp and staleness status.
-- Concurrent update/read operations are race-safe and tested.
+- Service supports deterministic follow of appended stream data for a selected source/stream.
+- Cursor state supports bounded, incremental reads suitable for near-real-time UI polling.
+- Validation enforces path-safe source selection and stream existence checks.
 
 ## Definition of Done (Sprint)
 - Documentation updates complete.
@@ -33,8 +33,8 @@ Implement agent last-seen visibility tracking primitives.
 - Sprint completion time logged for projection baseline updates.
 
 ## Risks
-- Clock and update ordering assumptions can cause stale/active misclassification.
+- Live-tail polling without bounds can cause expensive repeated file scans.
 
 ## Required Architectural Review Areas
-- Tracker cardinality bounds and retention behavior.
-- Integration boundaries between ingest/auth layers and liveness updates.
+- Cursor semantics and replay boundaries for repeated tail polling.
+- Resource bounds to keep control-plane reads predictable.
