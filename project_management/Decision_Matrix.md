@@ -1,0 +1,12 @@
+# Decision Matrix
+
+| Date | Topic | Options | Recommended | User Decision | Rationale | Impact |
+| ---- | ----- | ------- | ----------- | ------------- | --------- | ------ |
+| 2026-03-03 | DEPLOYMENT specification baseline | Keep minimal deployment guide vs define capacity/topology/degradation spec now | Define deployment capacity/topology/degradation now | Approved | Prevents scale and SLO ambiguity before implementation | High: deployment architecture and NFR enforcement |
+| 2026-03-03 | PROTOCOL v1 baseline | Wait for perfect spec vs derive minimal stable v1 from architecture/security docs | Derive stable minimal v1 now and evolve additively | Approved | Unblocks implementation while preserving compatibility and invariants | High: wire contract and compatibility rules |
+| 2026-03-03 | Backlog completion contract | Use only acceptance text vs require measurable performance + telemetry evidence | Require acceptance + performance + telemetry evidence | Approved | Makes completion objective and auditable | High: delivery quality gate |
+| 2026-03-03 | Initial repository source layout | `/agent /collector /shared /ui` vs add dedicated correlator and tests | Use `/agent /collector /correlator /shared /ui /tests` | Approved | Aligns architecture with multi-plane execution model | High: module boundaries and ownership |
+| 2026-03-03 | Pre-sprint mandatory guardrails | Deferred definition vs explicit immediate enforcement | Enforce explicit performance/state/sampling/observability/failure guardrails now | Approved | Reduces rework and overload failure risk | High: system reliability and operational safety |
+| 2026-03-03 | AI/plugin sequencing | Build AI framework early vs defer until core stream stability | Defer AI/plugin implementation until core streaming stable | Approved | Preserves focus and security posture | High: scope control and risk management |
+| 2026-03-03 | Sprint cadence model | Conventional multi-day sprints vs accelerated minute/hour sprints | Accelerated cadence with minimum 10 sprints/day and timestamp-based projections | Approved | Maximizes iteration velocity with explicit time-based tracking | Medium: planning and execution governance |
+| 2026-03-03 | Repository license | Placeholder license vs PolyForm Noncommercial 1.0.0 | Adopt PolyForm Noncommercial 1.0.0 | Approved | Establishes explicit distribution and use terms | Medium: legal/commercial constraints |

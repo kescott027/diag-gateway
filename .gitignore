@@ -1,0 +1,138 @@
+# .gitignore
+
+# =========================
+
+# Build Artifacts
+
+# =========================
+
+/bin/
+/dist/
+/build/
+/out/
+/coverage/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go
+
+vendor/
+*.coverprofile
+
+# Node / UI
+
+node_modules/
+ui/node_modules/
+ui/dist/
+ui/build/
+npm-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+
+# OS Files
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / Editor
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+
+# Logs
+
+*.log
+logs/
+
+# Runtime / Temp
+
+tmp/
+temp/
+*.tmp
+
+# =========================
+
+# Collector Data Workspace
+
+# =========================
+
+# All ingested logs, artifacts, and reconstructed streams
+
+/data/
+/collector-data/
+/workspace-data/
+/artifacts/
+
+# =========================
+
+# Security / Certificates
+
+# =========================
+
+*.pem
+*.key
+*.crt
+*.csr
+*.pfx
+*.p12
+/secrets/
+/certs/
+/ca/
+
+# Local configuration overrides
+
+.env
+.env.local
+config.local.yaml
+config.local.json
+
+# =========================
+
+# SQLite / Database
+
+# =========================
+
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# =========================
+
+# Docker
+
+# =========================
+
+docker-data/
+*.pid
+
+# =========================
+
+# Release Archives
+
+# =========================
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# =========================
+
+# Test Output
+
+# =========================
+
+test-output/
+reports/
+benchmarks/
+
